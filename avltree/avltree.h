@@ -1,6 +1,11 @@
 #ifndef AVLTREE_H_INCLUDED
 #define AVLTREE_H_INCLUDED
 
+// Ya que como no puedo liberar el puntero intervalo al restar intervalos,
+// represento el intervalo vacio como un intervalo de valores invalidos.
+#define INVALINI 1
+#define INVALFIN -1
+
 typedef struct _Intervalo {
     double inicio;
     double final;
@@ -14,7 +19,11 @@ typedef struct _AVLNodo {
     struct _AVLNodo *izq;
 }*AVLTree;
 
-typedef void (*Visitante) (Intervalo *);
+
+// Modifico visitante sobre el tp anterior. Ahora ademas de un intervalo,
+// toma un AVLTree al cual aplicar la función (en caso de usarse por dfs)
+// y devulve el arbol modificado resultante de esta operacion.
+typedef AVLTree (*Visitante) (Intervalo *, AVLTree);
 
 // itree_crear inicializa el nuevo arbol de intervalos.
 AVLTree itree_crear();
@@ -33,10 +42,11 @@ AVLTree itree_intersecar(AVLTree, Intervalo *);
 // itree_eliminar elimina el nodo que contenga el intervalo dado.
 AVLTree itree_eliminar(AVLTree, Intervalo *, int);
 
-// itree_recorrer_dfs recorre el arbol de la forma dfs.
-void itree_recorrer_dfs(AVLTree, Visitante);
+// itree_recorrer_dfs recorre el arbol de la forma dfs, aplicando la 
+// funcion visitante a cada nodo del primer arbol sobre el segundo arbol.
+void itree_recorrer_dfs(AVLTree, Visitante, AVLTree);
 
-// itree_recorrer_dfs recorre el arbol de la forma bfs.
+// itree_recorrer_dfs recorre el arbol de la forma bfs. Sin uso actual.
 void itree_recorrer_bfs(AVLTree, Visitante);
 
 // intervalo_imprimir (visitante) imprime los valores de un intervalo dado.

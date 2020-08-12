@@ -60,6 +60,7 @@ AVLTree rotar_derecha(AVLTree arbol) {
   copArbolIzq->altura =
       max(obtener_altura(copArbolIzq->izq),
           obtener_altura(copArbolIzq->der)) + 1;
+  copArbolIzq->mayorFinal = obtener_mayorFinal(copArbolIzq);
   // Se retorna el nuevo primer nodoz
   printf("Roto derecha\n");
   return copArbolIzq;
@@ -78,6 +79,7 @@ AVLTree rotar_izquierda(AVLTree arbol) {
   copArbolDer->altura =
       max(obtener_altura(copArbolDer->izq),
           obtener_altura(copArbolDer->der)) + 1;
+  copArbolDer->mayorFinal = obtener_mayorFinal(copArbolDer);
   // Se retorna el nuevo primer nodo
   printf("Roto izquierda\n");
   return copArbolDer;
@@ -284,31 +286,11 @@ void itree_destruir(AVLTree arbol) {
 // Funciones recorrer
 
 void intervalo_imprimir(Intervalo * intervalo) {
-  printf("[%f, %f]\n", intervalo->inicio, intervalo->final);
+  printf("[%f, %f]\n", intervalo->inicio, intervalo->final); //TODO modificar para que imprima dependiendo del intervalo
 }
 
-void inorder(AVLTree arbol) {
-  if (arbol == NULL)
-    return;
-  inorder(arbol->izq);
-  printf("[%f, %f] - maximo: %f altura:%d\n", arbol->intervalo->inicio,
-         arbol->intervalo->final, arbol->mayorFinal, arbol->altura);
-  inorder(arbol->der);
-}
 
-void itree_recorrer_dfs(AVLTree arbol, Visitante visitante) {
-  Stack stack = stack_new();
-  stack_push(stack, arbol);
-  while (!stack_isEmpty(stack)) {
-    AVLTree nodo = stack_top(stack);
-    stack_pop(stack);
-    if (nodo != NULL) {
-      visitante(nodo->intervalo);
-      stack_push(stack, nodo->der);
-      stack_push(stack, nodo->izq);
-    }
-  }
-}
+/* Bfs comentado
 
 void itree_recorrer_bfs(AVLTree arbol, Visitante visitante) {
   Queue queue = queue_new();
@@ -323,3 +305,90 @@ void itree_recorrer_bfs(AVLTree arbol, Visitante visitante) {
   }
   queue_destruir(queue);
 }
+**/
+
+// ----------------------------- CONJUNTOS AVL ---------------------------- //
+
+// Funciones recorrido y aplicacion. Modificadas y nuevas //
+
+
+// Modifico dfs del tp anterior. Lo uso para aplicar la funcion 
+// visitante a los nodos del primer arbol sobre el segundo arbol.
+
+// Para aplicar funciones visitantes a un solo arbol, uso inorder. 
+
+// Debido a la falta de necesidad, dejo comentada itree_recorrer_bfs.
+
+void itree_recorrer_dfs(AVLTree arbol, Visitante visitante, AVLTree objetivo) {
+  Stack nodos = stack_new();
+  // Corrijo error sobre el tp2, donde pusheabamos nulls al stack
+  if(arbol)
+    stack_push(nodos, arbol);
+  while (!stack_isEmpty(nodos)) {
+    AVLTree nodo = stack_top(nodos);
+    stack_pop(nodos);
+    objetivo = visitante(nodo->intervalo, objetivo);
+    // Solo pusheo los hijos si no son null (problema de la entrega anterior).
+    if(nodo->der)
+      stack_push(nodos, nodo->der);
+    if(nodo->izq)
+      stack_push(nodos, nodo->izq);
+    }
+    stack_destruir(nodos);
+    return objetivo;
+  }
+// TODO comprobar comportamiento correcto de dfs
+// Tambien modifico inorden, solo que esta se usa en el caso de aplicar
+// la funcion al intervalo en si y no sobre un arbol auxiliar objetivo.
+void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
+  if (arbol == NULL)
+    return;
+  itree_recorrer_inorder(arbol->izq, visitante);
+  visitante(arbol->intervalo, NULL); // TODO comprobar el buen funcionamiento de inorder modificado
+  itree_recorrer_inorder(arbol->der, visitante);
+}
+
+
+
+// Inserta un intervalo en un arbol argumento, de forma que
+// los intervalos del arbol final sean disjuntos entre si. // !! TODO DISYUNCION
+AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
+  if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN && arbol)
+    return arbol;
+  
+  Intervalo expandido;
+  // TODO hacer una funcion que de el intervalo expandido checkeando por infinitos y vacios
+  expandido.inicio = intervalo->inicio-1;
+  expandido.final = intervalo->final+1;
+  AVLTree interseccion = itree_intersecar(arbol, expandido);
+
+
+}
+
+// TODO hacer funcion itree_duplicar AVLTree ; AVLTree
+
+// Funciones de conjuntos
+AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
+  AVLTree duplicado;
+  if(conjA->intervalo->inicio == INVALINI && conjA->intervalo->final == INVALFIN)
+    return itree_duplicar(conjB);
+  if(conjA->intervalo->inicio == INVALINI && conjA->intervalo->final == INVALFIN)
+    return itree_duplicar(conjA);
+  // Intersecar hace un check de un intervalo contra un arbol hasta
+  // que el primero sea vacio. Debido a esto, es menos costoso
+  // intersecar los nodos del arbol mas chico al arbol mas grande 
+  if(conjA->altura <= conjB->altura){
+    duplicado = itree_duplicar(conjB);
+    duplicado = itree_recorrer_dfs(conjA, itree_insertar_disyuncion, duplicado);
+  }
+  else{
+    duplicado = itree_duplicar(conjA);
+    duplicado = itree_recorrer_dfs(conjB, itree_insertar_disyuncion, duplicado);
+  }
+  return duplicado;
+}
+// AVLTree conjuntoavl_interseccion
+// AVLTree conjuntoavl_resta
+// AVLTree conjuntoavl_complemento
+
+// TODO checkear funciones y como funcionan con un intervalo vacio y con uno infinito.
