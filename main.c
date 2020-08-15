@@ -7,6 +7,8 @@
 #include "avltree/lists/stack.h"
 #define CAPACIDAD 200
 
+
+/*
 int intervalo_verificar(char *inicio, char *final, Intervalo * intervalo) {
   char *errorI;
   double inicioD = strtod(inicio, &errorI);
@@ -181,5 +183,33 @@ int main() {
   // Se destruye el arbol sobre el cual se realizan las opearaciones.
   itree_destruir(arbol);
 
+  return 0;
+}
+
+
+*/
+
+int main() {
+  AVLTree A = itree_crear();
+  AVLTree B = itree_crear();
+  Intervalo *intervalo1 = malloc(sizeof(Intervalo));
+  Intervalo *intervalo2 = malloc(sizeof(Intervalo));
+  Intervalo *intervalo3 = malloc(sizeof(Intervalo));
+  Intervalo *intervalo4 = malloc(sizeof(Intervalo));
+  intervalo1->inicio = 1;
+  intervalo2->inicio = 7;
+  intervalo3->inicio = 14;
+  intervalo4->inicio = 3;
+  intervalo1->final = 2;
+  intervalo2->final = 8;
+  intervalo3->final = 15;
+  intervalo4->final = 4;
+  A = itree_insertar(A, intervalo1);
+  A = itree_insertar(A, intervalo2);
+  A = itree_insertar(A, intervalo3);
+  B = itree_insertar(B, intervalo4);
+  AVLTree C = conjuntoavl_union(A, B);
+  printf("Conjunto union C\n");
+  itree_recorrer_inorder(C, intervalo_imprimir);
   return 0;
 }

@@ -23,8 +23,9 @@ typedef struct _AVLNodo {
 // Modifico visitante sobre el tp anterior. Ahora ademas de un intervalo,
 // toma un AVLTree al cual aplicar la función (en caso de usarse por dfs)
 // y devulve el arbol modificado resultante de esta operacion.
-typedef AVLTree (*Visitante) (Intervalo *, AVLTree);
+typedef AVLTree (*VisitanteArboles) (Intervalo *, AVLTree);
 
+typedef void (*Visitante) (Intervalo *);
 // itree_crear inicializa el nuevo arbol de intervalos.
 AVLTree itree_crear();
 
@@ -44,12 +45,18 @@ AVLTree itree_eliminar(AVLTree, Intervalo *, int);
 
 // itree_recorrer_dfs recorre el arbol de la forma dfs, aplicando la 
 // funcion visitante a cada nodo del primer arbol sobre el segundo arbol.
-void itree_recorrer_dfs(AVLTree, Visitante, AVLTree);
+AVLTree itree_recorrer_dfs(AVLTree, VisitanteArboles, AVLTree);
 
 // itree_recorrer_dfs recorre el arbol de la forma bfs. Sin uso actual.
 void itree_recorrer_bfs(AVLTree, Visitante);
 
+void itree_recorrer_inorder(AVLTree, Visitante); 
+
 // intervalo_imprimir (visitante) imprime los valores de un intervalo dado.
 void intervalo_imprimir(Intervalo *);
+
+// ------------------- Funciones conjuntos avl -------------------- //
+
+AVLTree conjuntoavl_union(AVLTree, AVLTree);
 
 #endif

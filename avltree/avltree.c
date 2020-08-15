@@ -1,11 +1,20 @@
 #include <math.h>
 #include <stdio.h>
+#include <limits.h>
 #include <stdlib.h>
 #include "avltree.h"
 #include "lists/queue.h"
+#include <string.h>
 #include "lists/stack.h"
 
 // Funciones auxiliares -------------------------------------------------------
+
+
+int min(int a, int b) {
+  if (a < b)
+    return a;
+  return b;
+}
 
 int max(int a, int b) {
   if (a > b)
@@ -283,12 +292,49 @@ void itree_destruir(AVLTree arbol) {
   }
 }
 
-// Funciones recorrer
+// ----------------------------- CONJUNTOS AVL ---------------------------- //
 
-void intervalo_imprimir(Intervalo * intervalo) {
-  printf("[%f, %f]\n", intervalo->inicio, intervalo->final); //TODO modificar para que imprima dependiendo del intervalo
+// Funciones recorrido y aplicacion modificadas //
+
+
+// Modifico dfs del tp anterior. Lo uso para aplicar la funcion 
+// visitante a los nodos del primer arbol sobre el segundo arbol.
+// Casos de esto incluye union e interseccion.
+
+// Para aplicar funciones visitantes a un solo arbol, uso inorder. 
+// Ejemplos de esto es imprimir
+
+// Debido a la falta de necesidad, dejo comentada itree_recorrer_bfs.
+
+AVLTree itree_recorrer_dfs(AVLTree arbol, VisitanteArboles visitante, AVLTree objetivo) {
+  Stack nodos = stack_new();
+  // Corrijo error sobre el tp2, donde pusheabamos nulls al stack
+  if(arbol)
+    stack_push(nodos, arbol);
+  while (!stack_isEmpty(nodos)) {
+    AVLTree nodo = stack_top(nodos);
+    stack_pop(nodos);
+    objetivo = visitante(nodo->intervalo, objetivo);
+    // Solo pusheo los hijos si no son null (problema de la entrega anterior).
+    if(nodo->der)
+      stack_push(nodos, nodo->der);
+    if(nodo->izq)
+      stack_push(nodos, nodo->izq);
+    }
+    stack_destruir(nodos);
+    return objetivo;
+  }
+// ?comprobar comportamiento correcto de dfs
+
+// Tambien modifico inorden, solo que esta se usa en el caso de aplicar
+// la funcion al intervalo en si y no sobre un arbol auxiliar objetivo.
+void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
+  if (arbol == NULL)
+    return;
+  itree_recorrer_inorder(arbol->izq, visitante);
+  visitante(arbol->intervalo); //? comprobar el buen funcionamiento de inorder modificado
+  itree_recorrer_inorder(arbol->der, visitante);
 }
-
 
 /* Bfs comentado
 
@@ -307,61 +353,73 @@ void itree_recorrer_bfs(AVLTree arbol, Visitante visitante) {
 }
 **/
 
-// ----------------------------- CONJUNTOS AVL ---------------------------- //
+// Funciones visitante modificadas.
 
-// Funciones recorrido y aplicacion. Modificadas y nuevas //
-
-
-// Modifico dfs del tp anterior. Lo uso para aplicar la funcion 
-// visitante a los nodos del primer arbol sobre el segundo arbol.
-
-// Para aplicar funciones visitantes a un solo arbol, uso inorder. 
-
-// Debido a la falta de necesidad, dejo comentada itree_recorrer_bfs.
-
-void itree_recorrer_dfs(AVLTree arbol, Visitante visitante, AVLTree objetivo) {
-  Stack nodos = stack_new();
-  // Corrijo error sobre el tp2, donde pusheabamos nulls al stack
-  if(arbol)
-    stack_push(nodos, arbol);
-  while (!stack_isEmpty(nodos)) {
-    AVLTree nodo = stack_top(nodos);
-    stack_pop(nodos);
-    objetivo = visitante(nodo->intervalo, objetivo);
-    // Solo pusheo los hijos si no son null (problema de la entrega anterior).
-    if(nodo->der)
-      stack_push(nodos, nodo->der);
-    if(nodo->izq)
-      stack_push(nodos, nodo->izq);
-    }
-    stack_destruir(nodos);
-    return objetivo;
-  }
-// TODO comprobar comportamiento correcto de dfs
-// Tambien modifico inorden, solo que esta se usa en el caso de aplicar
-// la funcion al intervalo en si y no sobre un arbol auxiliar objetivo.
-void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
-  if (arbol == NULL)
-    return;
-  itree_recorrer_inorder(arbol->izq, visitante);
-  visitante(arbol->intervalo, NULL); // TODO comprobar el buen funcionamiento de inorder modificado
-  itree_recorrer_inorder(arbol->der, visitante);
+void intervalo_imprimir(Intervalo * intervalo) {
+  printf("[%f, %f]\n", intervalo->inicio, intervalo->final); //TODO modificar para que imprima dependiendo del intervalo
 }
 
 
 
-// Inserta un intervalo en un arbol argumento, de forma que
-// los intervalos del arbol final sean disjuntos entre si. // !! TODO DISYUNCION
-AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
-  if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN && arbol)
-    return arbol;
-  
-  Intervalo expandido;
-  // TODO hacer una funcion que de el intervalo expandido checkeando por infinitos y vacios
-  expandido.inicio = intervalo->inicio-1;
-  expandido.final = intervalo->final+1;
-  AVLTree interseccion = itree_intersecar(arbol, expandido);
 
+// Nuevas funciones de insercion / creacion.
+
+AVLTree itree_duplicar(AVLTree arbol){
+  if(!arbol)
+    return NULL;
+  
+  AVLTree duplicado = malloc(sizeof(struct _AVLNodo));
+  memcpy(duplicado, arbol, sizeof(struct _AVLNodo));
+  
+  duplicado->der = itree_duplicar(arbol->der);
+  duplicado->izq = itree_duplicar(arbol->izq);
+  
+  return duplicado;
+}
+
+
+Intervalo* intervalo_copiar(Intervalo* copia, Intervalo* intervalo){
+  *copia = *intervalo;
+  return copia; // ? Si no funciona hacer memcopy
+}
+Intervalo* intervalo_expandir(Intervalo* expandido){
+  // TODO hacer una funcion que de el intervalo expandido checkeando por infinitos y vacios
+  expandido->inicio -=1;
+  expandido->final +=1;
+  return expandido;
+}
+
+// Inserta un intervalo en un arbol argumento, de forma que
+// los intervalos del arbol final sean disjuntos entre si. // !! TODO COMENTAR
+AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
+  if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN && arbol) // ? Tengo que checkear arbol? Aun asi si resta y complemento funcionan bien, nunca deberia llegar aca un intervalo invalido ya que conjuntoavl_union lo deberia evitar.
+    return arbol;
+  Intervalo* copia = malloc(sizeof(Intervalo));
+  copia = intervalo_copiar(copia, intervalo);
+  Intervalo* expandido = malloc(sizeof(Intervalo));
+  expandido = intervalo_copiar(expandido, intervalo);
+  expandido = intervalo_expandir(expandido);
+  // Creo un nuevo intervalo expandido en 1 en cada extremo.
+  // Esto lo hago para comprobar la interseccion entre el arbol
+  // y el intervalo original
+  // Por ejemplo si el intervalo fuese (3,4) y el arbol contiene al (5,6)
+  // la interseccion daria vacia, aunque la union pudiese dar el conjunto (3,6)
+  AVLTree interseccionExp = itree_intersecar(arbol, expandido);
+  while(interseccionExp){
+    copia->inicio = min(copia->inicio, interseccionExp->intervalo->inicio);
+    copia->final = max(copia->final, interseccionExp->intervalo->final);
+    arbol = itree_eliminar(arbol, interseccionExp->intervalo, 0);
+
+    expandido = intervalo_copiar(expandido, copia);
+    expandido = intervalo_expandir(expandido);
+
+    interseccionExp = itree_intersecar(arbol, expandido);
+  }
+  free(expandido);
+  itree_destruir(interseccionExp);
+
+  arbol = itree_insertar(arbol, copia);
+  return arbol;
 
 }
 
@@ -369,14 +427,14 @@ AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
 
 // Funciones de conjuntos
 AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
-  AVLTree duplicado;
   if(conjA->intervalo->inicio == INVALINI && conjA->intervalo->final == INVALFIN)
     return itree_duplicar(conjB);
   if(conjA->intervalo->inicio == INVALINI && conjA->intervalo->final == INVALFIN)
     return itree_duplicar(conjA);
   // Intersecar hace un check de un intervalo contra un arbol hasta
   // que el primero sea vacio. Debido a esto, es menos costoso
-  // intersecar los nodos del arbol mas chico al arbol mas grande 
+  // intersecar los nodos del arbol mas chico al arbol mas grande
+  AVLTree duplicado;
   if(conjA->altura <= conjB->altura){
     duplicado = itree_duplicar(conjB);
     duplicado = itree_recorrer_dfs(conjA, itree_insertar_disyuncion, duplicado);
