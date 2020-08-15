@@ -1,7 +1,7 @@
 all: main
 
 main: main.c stack.o queue.o dlist.o avltree.o
-	gcc -Wall -Wextra -Werror -o main main.c avltree.o stack.o queue.o dlist.o -lm
+	gcc -std=c99 -Wall -Wextra -Werror -o main main.c avltree.o stack.o queue.o dlist.o -lm
 
 avltree.o: avltree/avltree.c avltree/avltree.h stack.o queue.o dlist.o
 	gcc -c -Wall -Wextra -Werror avltree/avltree.c
