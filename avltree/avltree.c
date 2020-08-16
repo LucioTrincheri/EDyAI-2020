@@ -296,6 +296,11 @@ void itree_destruir(AVLTree arbol) {
 
 // Funciones recorrido y aplicacion modificadas //
 
+int intervalo_inval(Intervalo* intervalo){
+  if(intervalo->inicio == INVALINI && intervalo->final == INVALFIN)
+    return 1;
+  return 0;
+}
 
 // Modifico dfs del tp anterior. Lo uso para aplicar la funcion 
 // visitante a los nodos del primer arbol sobre el segundo arbol.
@@ -392,10 +397,12 @@ Intervalo* intervalo_expandir(Intervalo* expandido){
 // Inserta un intervalo en un arbol argumento, de forma que
 // los intervalos del arbol final sean disjuntos entre si. // !! TODO COMENTAR
 AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
-  if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN && arbol) // ? Tengo que checkear arbol? Aun asi si resta y complemento funcionan bien, nunca deberia llegar aca un intervalo invalido ya que conjuntoavl_union lo deberia evitar.
+  if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN)
     return arbol;
   Intervalo* copia = malloc(sizeof(Intervalo));
   copia = intervalo_copiar(copia, intervalo);
+  if(!arbol)
+    return itree_insertar(arbol, copia);
   Intervalo* expandido = malloc(sizeof(Intervalo));
   expandido = intervalo_copiar(expandido, intervalo);
   expandido = intervalo_expandir(expandido);
@@ -434,7 +441,7 @@ AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
   // Intersecar hace un check de un intervalo contra un arbol hasta
   // que el primero sea vacio. Debido a esto, es menos costoso
   // intersecar los nodos del arbol mas chico al arbol mas grande
-  AVLTree duplicado;
+  AVLTree duplicado = itree_crear();
   if(conjA->altura <= conjB->altura){
     duplicado = itree_duplicar(conjB);
     duplicado = itree_recorrer_dfs(conjA, itree_insertar_disyuncion, duplicado);
@@ -445,8 +452,77 @@ AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
   }
   return duplicado;
 }
-// AVLTree conjuntoavl_interseccion
-// AVLTree conjuntoavl_resta
+
+Intervalo* intervalo_intersecado(Intervalo* inter1, Intervalo* inter2, Intervalo* resultado){
+  resultado->inicio = max(inter1->inicio, inter2->inicio); //!Puede ser necesario castear el resultado
+  resultado->final = min(inter1->final, inter2->final);
+  return resultado;
+}
+
+AVLTree itree_agregar_interseccion(Intervalo* intervalo, AVLTree intersecado, AVLTree interseccion){
+  // ! Probar funcionalidad
+  AVLTree intersecta = itree_intersecar(intersecado, intervalo);
+  if(intersecta){
+    Intervalo* resultado = malloc(sizeof(Intervalo));
+    resultado = intervalo_intersecado(intervalo, intersecta->intervalo, resultado);
+    interseccion = itree_insertar_disyuncion(resultado, interseccion);
+    if(intersecta->der)
+      interseccion = itree_agregar_interseccion(intervalo, intersecta->der, interseccion);
+    if(intersecta->izq)
+      interseccion = itree_agregar_interseccion(intervalo, intersecta->izq, interseccion);
+  }
+  return interseccion;
+}
+
+AVLTree itree_interseccion_aux(AVLTree arbol, AVLTree intersecado, AVLTree interseccion){
+  Stack nodos = stack_new();
+  if(arbol)
+    stack_push(nodos, arbol);
+  while (!stack_isEmpty(nodos)) {
+    AVLTree nodo = stack_top(nodos);
+    stack_pop(nodos);
+    interseccion = itree_agregar_interseccion(nodo->intervalo, intersecado, interseccion);
+    if(nodo->der)
+      stack_push(nodos, nodo->der);
+    if(nodo->izq)
+      stack_push(nodos, nodo->izq);
+    }
+  stack_destruir(nodos);
+  return interseccion;
+}
+
+AVLTree conjuntoavl_interseccion(AVLTree conjA, AVLTree conjB){ // TODO checkear interseccion
+  AVLTree interseccion = itree_crear();
+  if(intervalo_inval(conjA->intervalo) || intervalo_inval(conjB->intervalo)){
+    Intervalo* vacio = malloc(sizeof(Intervalo));
+    vacio->inicio = INVALINI; // ! Puede ser necesario castear la variable.
+    vacio->final = INVALFIN;
+    return itree_insertar(interseccion, vacio);
+  }
+
+  // Al contrario que union, como interseccion va eliminando elementos del
+  // arbol de intervalos, es preferible duplicar el arbol mas pequeño para
+  // tener que hacer menos intersecciones en el caso de que la interseccion
+  // sea completa (todo el arbol menor esta dentro del arbol mayor)
+  AVLTree intersecado = itree_crear();
+  if(conjA->altura <= conjB->altura){
+    intersecado = itree_duplicar(conjA);
+    interseccion = itree_interseccion_aux(conjB, conjA, interseccion);
+  }
+  else{
+    intersecado = itree_duplicar(conjB);
+    interseccion = itree_interseccion_aux(conjA, conjB, interseccion); // ! Puede ser que modifique conjB (checkear)
+  }
+  return interseccion;
+}
+
+AVLTree conjuntoavl_resta(AVLTree conjA, AVLTree conjB){
+  AVLTree resta = itree_crear();
+  resta = itree_duplicar(conjA);
+  if(intervalo_inval(conjA->intervalo) || intervalo_inval(conjB->intervalo))
+    return resta;
+  AVLTree interseccion = conjuntoavl_interseccion(conjA, conjB);
+}
 // AVLTree conjuntoavl_complemento
 
 // TODO checkear funciones y como funcionan con un intervalo vacio y con uno infinito.
