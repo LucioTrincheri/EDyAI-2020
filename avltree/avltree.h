@@ -47,9 +47,6 @@ AVLTree itree_eliminar(AVLTree, Intervalo *, int);
 // funcion visitante a cada nodo del primer arbol sobre el segundo arbol.
 AVLTree itree_recorrer_dfs(AVLTree, VisitanteArboles, AVLTree);
 
-// itree_recorrer_dfs recorre el arbol de la forma bfs. Sin uso actual.
-void itree_recorrer_bfs(AVLTree, Visitante);
-
 void itree_recorrer_inorder(AVLTree, Visitante); 
 
 // intervalo_imprimir (visitante) imprime los valores de un intervalo dado.

@@ -309,7 +309,7 @@ int intervalo_inval(Intervalo* intervalo){
 // Para aplicar funciones visitantes a un solo arbol, uso inorder. 
 // Ejemplos de esto es imprimir
 
-// Debido a la falta de necesidad, dejo comentada itree_recorrer_bfs.
+// Debido a la falta de necesidad, se borro itree_recorrer_bfs.
 
 AVLTree itree_recorrer_dfs(AVLTree arbol, VisitanteArboles visitante, AVLTree objetivo) {
   Stack nodos = stack_new();
@@ -341,22 +341,6 @@ void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
   itree_recorrer_inorder(arbol->der, visitante);
 }
 
-/* Bfs comentado
-
-void itree_recorrer_bfs(AVLTree arbol, Visitante visitante) {
-  Queue queue = queue_new();
-  queue_agregar(queue, arbol);
-  while (!queue_isEmpty(queue)) {
-    AVLTree nodo = queue_sacar(queue);
-    if (nodo != NULL) {
-      visitante(nodo->intervalo);
-      queue_agregar(queue, nodo->izq);
-      queue_agregar(queue, nodo->der);
-    }
-  }
-  queue_destruir(queue);
-}
-**/
 
 // Funciones visitante modificadas.
 
@@ -384,7 +368,8 @@ AVLTree itree_duplicar(AVLTree arbol){
 
 
 Intervalo* intervalo_copiar(Intervalo* copia, Intervalo* intervalo){
-  *copia = *intervalo;
+  copia->inicio = intervalo->inicio;
+  copia->final = intervalo->final;
   return copia; // ? Si no funciona hacer memcopy
 }
 Intervalo* intervalo_expandir(Intervalo* expandido){
@@ -423,7 +408,7 @@ AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
     interseccionExp = itree_intersecar(arbol, expandido);
   }
   free(expandido);
-  itree_destruir(interseccionExp);
+  itree_destruir(interseccionExp); // ! puede estar al pedo ya que es null (checkear memoria)
 
   arbol = itree_insertar(arbol, copia);
   return arbol;
@@ -516,13 +501,66 @@ AVLTree conjuntoavl_interseccion(AVLTree conjA, AVLTree conjB){ // TODO checkear
   return interseccion;
 }
 
+//! CUIDADO CON IGUALAR INTERSECCION
+//? debo salir de aca con resta modificada y sin mas intersecciones con el intervalo
+AVLTree itree_resta_intervalo(Intervalo* intervalo, AVLTree resta){
+  if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN)
+    return resta;
+  AVLTree interseccion = itree_intersecar(resta, intervalo);
+  while(interseccion){
+    // TODO resta intervalos
+    if(intervalo->inicio <= interseccion->intervalo->inicio){
+      if(intervalo->final < interseccion->intervalo->final){
+        interseccion->intervalo->inicio = intervalo->final + 1;
+        interseccion = itree_intersecar(resta, intervalo);
+      } else {
+        // Caso intervalo del arbol dentro del intervalo
+        resta = itree_eliminar(resta, interseccion->intervalo);
+        interseccion = itree_intersecar(resta, intervalo);
+      }
+    } else {
+      if(intervalo->final < interseccion->intervalo->final){
+        // Caso intervalo dentro del intervalo del arbol
+        Intervalo* resto = malloc(sizeof(Intervalo));
+        resto->inicio = intervalo->final + 1;
+        resto->final = interseccion->intervalo->final;
+        interseccion->intervalo->final = intervalo->inicio - 1;
+        resta = itree_insertar(resta, resto);
+        return resta;
+      } else {
+        interseccion->intervalo->final = intervalo->inicio - 1;
+        interseccion = itree_intersecar(resta, intervalo);
+      }
+    }
+  }
+  itree_destruir(interseccion); // ! Al igual que agregar puede llegar a ser inutil
+  return resta;
+}
+
 AVLTree conjuntoavl_resta(AVLTree conjA, AVLTree conjB){
   AVLTree resta = itree_crear();
   resta = itree_duplicar(conjA);
   if(intervalo_inval(conjA->intervalo) || intervalo_inval(conjB->intervalo))
     return resta;
-  AVLTree interseccion = conjuntoavl_interseccion(conjA, conjB);
+  resta = itree_recorrer_dfs(conjB, itree_resta_intervalo, resta);
+  if(!resta){
+    Intervalo* vacio = malloc(sizeof(Intervalo));
+    vacio->inicio = INVALINI; // ! Puede ser necesario castear la variable.
+    vacio->final = INVALFIN;
+    resta = itree_insertar(resta, vacio);
+  }
+  return resta;
 }
-// AVLTree conjuntoavl_complemento
+
+AVLTree conjuntoavl_complemento(AVLTree conjA){
+  AVLTree universo = itree_crear();
+  Intervalo* univ = malloc(sizeof(Intervalo));
+  univ->inicio = INT_MIN;
+  univ->final = INT_MAX;
+  universo = itree_insertar(universo, univ);
+  AVLTree complemento = conjuntoavl_resta(universo, conjA);
+  itree_destruir(universo);
+  return complemento;
+}
 
 // TODO checkear funciones y como funcionan con un intervalo vacio y con uno infinito.
