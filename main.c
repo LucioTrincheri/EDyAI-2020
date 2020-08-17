@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include "avltree/avltree.h"
 #include "avltree/lists/queue.h"
 #include "avltree/lists/stack.h"
@@ -308,5 +309,27 @@ int main() {
   printf("Conjunto complemento infinito compuesto:\n");
   itree_imprimir(R, intervalo_imprimir);
   printf("\n");
+
+  itree_destruir(A);
+  itree_destruir(B);
+  itree_destruir(C);
+  itree_destruir(D);
+  itree_destruir(E);
+  itree_destruir(F);
+  itree_destruir(G);
+  itree_destruir(H);
+  itree_destruir(I);
+  itree_destruir(J);
+  itree_destruir(K);
+  itree_destruir(L);
+  itree_destruir(M);
+  itree_destruir(N);
+  itree_destruir(O);
+  itree_destruir(P);
+  itree_destruir(Q);
+  itree_destruir(R);
+  itree_destruir(V);
+  itree_destruir(Ir);
+  
   return 0;
 }
