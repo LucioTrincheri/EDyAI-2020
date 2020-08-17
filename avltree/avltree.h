@@ -52,6 +52,8 @@ void itree_recorrer_inorder(AVLTree, Visitante);
 // intervalo_imprimir (visitante) imprime los valores de un intervalo dado.
 void intervalo_imprimir(Intervalo *);
 
+void itree_imprimir(AVLTree, Visitante);
+
 // ------------------- Funciones conjuntos avl -------------------- //
 
 AVLTree conjuntoavl_union(AVLTree, AVLTree);

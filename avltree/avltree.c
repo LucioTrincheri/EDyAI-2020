@@ -65,7 +65,6 @@ AVLTree rotar_derecha(AVLTree arbol) {
           obtener_altura(copArbolIzq->der)) + 1;
   copArbolIzq->mayorFinal = obtener_mayorFinal(copArbolIzq);
   // Se retorna el nuevo primer nodoz
-  printf("Roto derecha\n");
   return copArbolIzq;
 }
 
@@ -84,7 +83,6 @@ AVLTree rotar_izquierda(AVLTree arbol) {
           obtener_altura(copArbolDer->der)) + 1;
   copArbolDer->mayorFinal = obtener_mayorFinal(copArbolDer);
   // Se retorna el nuevo primer nodo
-  printf("Roto izquierda\n");
   return copArbolDer;
 }
 
@@ -356,12 +354,25 @@ void intervalo_imprimir(Intervalo * intervalo) {
 }
 
 // TODO Terminar imprimir y borrar irorder (obsoleta) 
-void itree_imprimir(AVLTree arbol){
-  if (arbol == NULL)
-    return;
-  itree_recorrer_inorder(arbol->izq);
-  intervalo_imprimir(arbol->intervalo);
-  itree_recorrer_inorder(arbol->der);
+
+void itree_imprimir(AVLTree arbol, Visitante visitante){
+  Stack nodos = stack_new();
+  AVLTree temp = arbol;
+  while (temp != NULL || !stack_isEmpty(nodos)) {
+    while (temp != NULL) {
+      stack_push(nodos, temp);
+      temp = temp->izq;
+    }
+    temp = stack_top(nodos);
+    stack_pop(nodos);
+    
+    visitante(temp->intervalo);
+
+    temp = temp->der;
+    if (temp != NULL || !stack_isEmpty(nodos))
+      printf(",");
+  }
+  stack_destruir(nodos);
 }
 
 

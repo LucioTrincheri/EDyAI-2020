@@ -225,47 +225,58 @@ int main() {
 
   AVLTree C = conjuntoavl_union(A, B);
   printf("Conjunto union A u B:\n");
-  itree_recorrer_inorder(C, intervalo_imprimir);
+  itree_imprimir(C, intervalo_imprimir);
+  printf("\n");
 
   AVLTree E = conjuntoavl_union(A, D);
   printf("Conjunto union A u D:\n");
-  itree_recorrer_inorder(E, intervalo_imprimir);
+  itree_imprimir(E, intervalo_imprimir);
+  printf("\n");
 
   AVLTree H = conjuntoavl_union(A, I);
   printf("Conjunto union A u I:\n");
-  itree_recorrer_inorder(H, intervalo_imprimir);
+  itree_imprimir(H, intervalo_imprimir);
+  printf("\n");
   // ----------
   AVLTree F = conjuntoavl_interseccion(A, B);
   printf("Conjunto interseccion A i B:\n");
-  itree_recorrer_inorder(F, intervalo_imprimir);
+  itree_imprimir(F, intervalo_imprimir);
+  printf("\n");
 
   AVLTree G = conjuntoavl_interseccion(A, D);
   printf("Conjunto interseccion A i D:\n");
-  itree_recorrer_inorder(G, intervalo_imprimir);
+  itree_imprimir(G, intervalo_imprimir);
+  printf("\n");
 
   AVLTree J = conjuntoavl_interseccion(A, I);
   printf("Conjunto interseccion A i I:\n");
-  itree_recorrer_inorder(J, intervalo_imprimir);
+  itree_imprimir(J, intervalo_imprimir);
+  printf("\n");
   // ----------
   AVLTree K = conjuntoavl_resta(A, B);
   printf("Conjunto resta A r B:\n");
-  itree_recorrer_inorder(K, intervalo_imprimir);
+  itree_imprimir(K, intervalo_imprimir);
+  printf("\n");
 
   AVLTree L = conjuntoavl_resta(A, D);
   printf("Conjunto resta A r D:\n");
-  itree_recorrer_inorder(L, intervalo_imprimir);
+  itree_imprimir(L, intervalo_imprimir);
+  printf("\n");
 
   AVLTree M = conjuntoavl_resta(A, I);
   printf("Conjunto resta A r I:\n");
-  itree_recorrer_inorder(M, intervalo_imprimir);
+  itree_imprimir(M, intervalo_imprimir);
+  printf("\n");
 
   AVLTree N = conjuntoavl_resta(I, A);
   printf("Conjunto resta I r A:\n");
-  itree_recorrer_inorder(N, intervalo_imprimir);
+  itree_imprimir(N, intervalo_imprimir);
+  printf("\n");
   // ----------
   AVLTree O = conjuntoavl_complemento(A);
   printf("Conjunto complemento A:\n");
-  itree_recorrer_inorder(O, intervalo_imprimir);
+  itree_imprimir(O, intervalo_imprimir);
+  printf("\n");
 
   AVLTree V = itree_crear();
   Intervalo* intervalo7 = malloc(sizeof(Intervalo));
@@ -275,11 +286,13 @@ int main() {
 
   AVLTree P = conjuntoavl_complemento(V);
   printf("Conjunto complemento vacio:\n");
-  itree_recorrer_inorder(P, intervalo_imprimir);
+  itree_imprimir(P, intervalo_imprimir);
+  printf("\n");
 
   AVLTree Q = conjuntoavl_complemento(I);
   printf("Conjunto complemento infinito:\n");
-  itree_recorrer_inorder(Q, intervalo_imprimir);
+  itree_imprimir(Q, intervalo_imprimir);
+  printf("\n");
 
   AVLTree Ir = itree_crear();
   Intervalo* intervalo8 = malloc(sizeof(Intervalo));
@@ -293,7 +306,7 @@ int main() {
 
   AVLTree R = conjuntoavl_complemento(Ir);
   printf("Conjunto complemento infinito compuesto:\n");
-  itree_recorrer_inorder(R, intervalo_imprimir);
-
+  itree_imprimir(R, intervalo_imprimir);
+  printf("\n");
   return 0;
 }
