@@ -22,12 +22,6 @@ int max(int a, int b) {
   return b;
 }
 
-double max_double(double a, double b) {
-  if (a > b)
-    return a;
-  return b;
-}
-
 int obtener_altura(AVLTree arbol) {
   if (arbol)
     return arbol->altura;
@@ -40,17 +34,17 @@ int obtener_balance(AVLTree arbol) {
   return 0;
 }
 
-double obtener_mayorFinal(AVLTree arbol) {
+int obtener_mayorFinal(AVLTree arbol) {
   if (arbol->der == NULL || arbol->izq == NULL) {
     AVLTree temp = arbol->izq ? arbol->izq : arbol->der;
     // Sin hijos
     if (temp == NULL)
       return arbol->intervalo->final;
     else                        // Caso un hijo
-      return max_double(arbol->intervalo->final, temp->mayorFinal);
+      return max(arbol->intervalo->final, temp->mayorFinal);
   } else                        // Caso dos hijos
-    return max_double(arbol->intervalo->final,
-                      max_double(arbol->izq->mayorFinal,
+    return max(arbol->intervalo->final,
+                      max(arbol->izq->mayorFinal,
                                  arbol->der->mayorFinal));
 }
 
@@ -329,7 +323,6 @@ AVLTree itree_recorrer_dfs(AVLTree arbol, VisitanteArboles visitante, AVLTree ob
     stack_destruir(nodos);
     return objetivo;
   }
-// ?comprobar comportamiento correcto de dfs
 
 // Tambien modifico inorden, solo que esta se usa en el caso de aplicar
 // la funcion al intervalo en si y no sobre un arbol auxiliar objetivo.
@@ -337,7 +330,7 @@ void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
   if (arbol == NULL)
     return;
   itree_recorrer_inorder(arbol->izq, visitante);
-  visitante(arbol->intervalo); //? comprobar el buen funcionamiento de inorder modificado
+  visitante(arbol->intervalo);
   itree_recorrer_inorder(arbol->der, visitante);
 }
 
@@ -345,10 +338,31 @@ void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
 // Funciones visitante modificadas.
 
 void intervalo_imprimir(Intervalo * intervalo) {
-  printf("[%f, %f]\n", intervalo->inicio, intervalo->final); //TODO modificar para que imprima dependiendo del intervalo
+  if(intervalo->inicio == intervalo->final)
+    printf("%d", intervalo->inicio);
+  else {
+    if(intervalo_inval(intervalo))
+      printf("Ø");
+    else if(intervalo->inicio == -INT_MAX){
+      if(intervalo->final == INT_MAX)
+        printf("-INF:INF");
+      else
+        printf("-INF:%d", intervalo->final);
+    } else if(intervalo->final == INT_MAX)
+      printf("%d:INF", intervalo->inicio);
+    else 
+      printf("%d:%d", intervalo->inicio, intervalo->final);
+  }
 }
 
-
+// TODO Terminar imprimir y borrar irorder (obsoleta) 
+void itree_imprimir(AVLTree arbol){
+  if (arbol == NULL)
+    return;
+  itree_recorrer_inorder(arbol->izq);
+  intervalo_imprimir(arbol->intervalo);
+  itree_recorrer_inorder(arbol->der);
+}
 
 
 // Nuevas funciones de insercion / creacion.
@@ -358,7 +372,11 @@ AVLTree itree_duplicar(AVLTree arbol){
     return NULL;
   
   AVLTree duplicado = malloc(sizeof(struct _AVLNodo));
-  memcpy(duplicado, arbol, sizeof(struct _AVLNodo));
+  duplicado->altura = arbol->altura;
+  duplicado->mayorFinal = arbol->mayorFinal;
+  duplicado->intervalo = malloc(sizeof(Intervalo));
+  duplicado->intervalo->inicio = arbol->intervalo->inicio;
+  duplicado->intervalo->final = arbol->intervalo->final;
   
   duplicado->der = itree_duplicar(arbol->der);
   duplicado->izq = itree_duplicar(arbol->izq);
@@ -370,12 +388,13 @@ AVLTree itree_duplicar(AVLTree arbol){
 Intervalo* intervalo_copiar(Intervalo* copia, Intervalo* intervalo){
   copia->inicio = intervalo->inicio;
   copia->final = intervalo->final;
-  return copia; // ? Si no funciona hacer memcopy
+  return copia;
 }
 Intervalo* intervalo_expandir(Intervalo* expandido){
-  // TODO hacer una funcion que de el intervalo expandido checkeando por infinitos y vacios
-  expandido->inicio -=1;
-  expandido->final +=1;
+  if(expandido->inicio != -INT_MAX)
+    expandido->inicio -=1;
+  if(expandido->final != INT_MAX)
+    expandido->final +=1;
   return expandido;
 }
 
@@ -408,20 +427,18 @@ AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
     interseccionExp = itree_intersecar(arbol, expandido);
   }
   free(expandido);
-  itree_destruir(interseccionExp); // ! puede estar al pedo ya que es null (checkear memoria)
+  free(interseccionExp); // ! puede estar al pedo ya que es null (checkear memoria)
 
   arbol = itree_insertar(arbol, copia);
   return arbol;
 
 }
 
-// TODO hacer funcion itree_duplicar AVLTree ; AVLTree
-
 // Funciones de conjuntos
 AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
-  if(conjA->intervalo->inicio == INVALINI && conjA->intervalo->final == INVALFIN)
+  if(intervalo_inval(conjA->intervalo))
     return itree_duplicar(conjB);
-  if(conjA->intervalo->inicio == INVALINI && conjA->intervalo->final == INVALFIN)
+  if(intervalo_inval(conjB->intervalo))
     return itree_duplicar(conjA);
   // Intersecar hace un check de un intervalo contra un arbol hasta
   // que el primero sea vacio. Debido a esto, es menos costoso
@@ -439,7 +456,7 @@ AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
 }
 
 Intervalo* intervalo_intersecado(Intervalo* inter1, Intervalo* inter2, Intervalo* resultado){
-  resultado->inicio = max(inter1->inicio, inter2->inicio); //!Puede ser necesario castear el resultado
+  resultado->inicio = max(inter1->inicio, inter2->inicio);
   resultado->final = min(inter1->final, inter2->final);
   return resultado;
 }
@@ -480,7 +497,7 @@ AVLTree conjuntoavl_interseccion(AVLTree conjA, AVLTree conjB){ // TODO checkear
   AVLTree interseccion = itree_crear();
   if(intervalo_inval(conjA->intervalo) || intervalo_inval(conjB->intervalo)){
     Intervalo* vacio = malloc(sizeof(Intervalo));
-    vacio->inicio = INVALINI; // ! Puede ser necesario castear la variable.
+    vacio->inicio = INVALINI;
     vacio->final = INVALFIN;
     return itree_insertar(interseccion, vacio);
   }
@@ -489,33 +506,34 @@ AVLTree conjuntoavl_interseccion(AVLTree conjA, AVLTree conjB){ // TODO checkear
   // arbol de intervalos, es preferible duplicar el arbol mas pequeño para
   // tener que hacer menos intersecciones en el caso de que la interseccion
   // sea completa (todo el arbol menor esta dentro del arbol mayor)
-  AVLTree intersecado = itree_crear();
   if(conjA->altura <= conjB->altura){
-    intersecado = itree_duplicar(conjA);
     interseccion = itree_interseccion_aux(conjB, conjA, interseccion);
   }
   else{
-    intersecado = itree_duplicar(conjB);
-    interseccion = itree_interseccion_aux(conjA, conjB, interseccion); // ! Puede ser que modifique conjB (checkear)
+    interseccion = itree_interseccion_aux(conjA, conjB, interseccion);
+  }
+
+  if(!interseccion){
+    Intervalo* vacio = malloc(sizeof(Intervalo));
+    vacio->inicio = INVALINI;
+    vacio->final = INVALFIN;
+    interseccion = itree_insertar(interseccion, vacio);
   }
   return interseccion;
 }
 
-//! CUIDADO CON IGUALAR INTERSECCION
-//? debo salir de aca con resta modificada y sin mas intersecciones con el intervalo
 AVLTree itree_resta_intervalo(Intervalo* intervalo, AVLTree resta){
   if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN)
     return resta;
   AVLTree interseccion = itree_intersecar(resta, intervalo);
   while(interseccion){
-    // TODO resta intervalos
     if(intervalo->inicio <= interseccion->intervalo->inicio){
       if(intervalo->final < interseccion->intervalo->final){
         interseccion->intervalo->inicio = intervalo->final + 1;
         interseccion = itree_intersecar(resta, intervalo);
       } else {
         // Caso intervalo del arbol dentro del intervalo
-        resta = itree_eliminar(resta, interseccion->intervalo);
+        resta = itree_eliminar(resta, interseccion->intervalo, 0);
         interseccion = itree_intersecar(resta, intervalo);
       }
     } else {
@@ -533,7 +551,7 @@ AVLTree itree_resta_intervalo(Intervalo* intervalo, AVLTree resta){
       }
     }
   }
-  itree_destruir(interseccion); // ! Al igual que agregar puede llegar a ser inutil
+  free(interseccion); // ! Al igual que agregar puede llegar a ser inutil checkear memoria
   return resta;
 }
 
@@ -545,7 +563,7 @@ AVLTree conjuntoavl_resta(AVLTree conjA, AVLTree conjB){
   resta = itree_recorrer_dfs(conjB, itree_resta_intervalo, resta);
   if(!resta){
     Intervalo* vacio = malloc(sizeof(Intervalo));
-    vacio->inicio = INVALINI; // ! Puede ser necesario castear la variable.
+    vacio->inicio = INVALINI;
     vacio->final = INVALFIN;
     resta = itree_insertar(resta, vacio);
   }
@@ -555,12 +573,10 @@ AVLTree conjuntoavl_resta(AVLTree conjA, AVLTree conjB){
 AVLTree conjuntoavl_complemento(AVLTree conjA){
   AVLTree universo = itree_crear();
   Intervalo* univ = malloc(sizeof(Intervalo));
-  univ->inicio = INT_MIN;
+  univ->inicio = -INT_MAX;
   univ->final = INT_MAX;
   universo = itree_insertar(universo, univ);
   AVLTree complemento = conjuntoavl_resta(universo, conjA);
   itree_destruir(universo);
   return complemento;
 }
-
-// TODO checkear funciones y como funcionan con un intervalo vacio y con uno infinito.

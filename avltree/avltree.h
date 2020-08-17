@@ -7,14 +7,14 @@
 #define INVALFIN -1
 
 typedef struct _Intervalo {
-    double inicio;
-    double final;
+    int inicio;
+    int final;
 }Intervalo;
 
 typedef struct _AVLNodo {
     Intervalo *intervalo;
     int altura;
-    double mayorFinal;
+    int mayorFinal;
     struct _AVLNodo *der;
     struct _AVLNodo *izq;
 }*AVLTree;
@@ -56,4 +56,9 @@ void intervalo_imprimir(Intervalo *);
 
 AVLTree conjuntoavl_union(AVLTree, AVLTree);
 
+AVLTree conjuntoavl_interseccion(AVLTree, AVLTree);
+
+AVLTree conjuntoavl_resta(AVLTree, AVLTree);
+
+AVLTree conjuntoavl_complemento(AVLTree);
 #endif
