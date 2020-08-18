@@ -21,4 +21,10 @@ Hash *hash_crear(unsigned int);
 
 unsigned int hash_indice(int, char *);
 
+void hash_insertar(Hash *, char *, AVLTree);
+
+AVLTree hash_conjunto(Hash *, char *);
+
+void hash_destruir(Hash *);
+
 #endif
