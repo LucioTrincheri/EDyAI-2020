@@ -64,9 +64,6 @@ void insertar_extension(Hash* hash, char* alias, char* conjunto){
   char end;
   sscanf(conjunto, "{%255[^}.]} %255[^\n]%c", numeros, resto, &end);
   const char ch = '.';
-  printf("Numero: %s-FINAL\n", numeros);
-  printf("Resto: %s-FINAL\n", resto);
-  printf("End: %c-FINAL-\n", end);
   if(end != '\0' || strchr(numeros, ch) != NULL){
     printf("Error del conjunto por extension\n");
     free(numeros);
@@ -117,17 +114,11 @@ void insertar_comprension(Hash* hash, char* alias, char* conjunto){
   char end;
   const char ch = '.';
   if(strchr(conjunto, ch) != NULL){
-    printf("Se encontraron numeros de punto flotante\n");
+    printf("Se encontraron numeros de coma flotante\n");
     free(resto);
     return;
   }
   sscanf(conjunto, "{%c : %19s <= %c <= %19[^}\n]} %255[^\n]%c", &var1, num1, &var2, num2, resto, &end);
-  printf("Var1: %c-FINAL\n", var1);
-  printf("Num1: %s-FINAL\n", num1);
-  printf("Var2: %c-FINAL-\n", var2);
-  printf("Num2: %s-FINAL\n", num2);
-  printf("Resto: %s-FINAL\n", resto);
-  printf("End: %c-FINAL-\n", end);
   if(end != '\0' || var1 != var2 || var1 != 'x'){
     printf("Conjunto por comprension mal desarrollado\n");
     free(resto);
@@ -164,10 +155,6 @@ void insertar_comprension(Hash* hash, char* alias, char* conjunto){
 }
 
 int error_operacion(char end, char* resto){
-
-  if((end != '\0') /* falta modificar para que funcione con complemento*/){
-    printf("End no es barra 0\n");
-  }
   if((end != '\0' || strlen(resto) != 0) /* falta modificar para que funcione con complemento*/){
     printf("Error en la forma de la operacion a ejecutar\n");
     return 0;
@@ -180,28 +167,10 @@ void ejecutar_operacion(Hash* hash, char* alias, char* operacion){
   char* alias2 = calloc(100, sizeof(char));
   char* resto = calloc(50, sizeof(char));
   char end, op;
-  //scanf("%*[^\n]");
-  //scanf("%*c");
   sscanf(operacion, "%99s %c %99s %49[^\n]%c", alias1, &op, alias2, resto, &end);
-  printf("alias1: %s-FINAL\n", alias1);
-  //printf("op: %c-FINAL\n", op);
-  //printf("alias2: %s-FINAL-\n", alias2);
-  //printf("resto: %s-FINAL\n", resto);
-  //printf("End: %c-FINAL-\n", end);
   AVLTree final = NULL;
   if(op == '|' && error_operacion(end, resto)){
-    //printf("Alias:%s-FInal-\n", alias);
-    //printf("Primer Alias:%s-FInal-\n", alias1);
-    //printf("Segundo Alias:%s-FInal-\n", alias2);
-    //AVLTree primer = hash_conjunto(hash, alias1);
-    //AVLTree segundo = hash_conjunto(hash, alias2);
-    //printf("Primer arbol\n");
-    //itree_imprimir(primer, intervalo_imprimir);
-    //printf("Segundo arbol\n");
-    //itree_imprimir(segundo, intervalo_imprimir);
     final = conjuntoavl_union(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
-    //printf("Arbol union\n");
-    //itree_imprimir(final, intervalo_imprimir);
     }
   else if (op == '&' && error_operacion(end, resto))
     final = conjuntoavl_interseccion(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
@@ -248,10 +217,6 @@ char entrada_validar(char *comando, char* inicio, char* igual, char* operacion) 
     if (indexToken == 0)
       copiar_seccion(comando, inicio, i, &cont, &indexToken, eows[0]);
   }
-  printf("Index: %d\n", indexToken+1);
-  printf("Cadena inicio: %s-FINAL-\n", inicio);
-  printf("Cadena igual: %s-FINAL-\n", igual);
-  printf("Cadena operacion: %s-FINAL-\n", operacion);
   return funcion_verificar(inicio, igual, operacion, ++indexToken);
 }
 
@@ -288,12 +253,12 @@ int main() {
       break;
     
     case EXTENSION:
-      printf("Llegaste a extension\n");
+      //printf("Llegaste a extension\n");
       insertar_extension(hash, inicio, operacion);
       break;
     
     case COMPRENSION:
-      printf("Llegaste a comprension\n");
+      //printf("Llegaste a comprension\n");
       insertar_comprension(hash, inicio, operacion);
       break;
 
@@ -306,7 +271,7 @@ int main() {
       break;
     
     case IMPRIMIR:
-      printf("Llegaste a imprimir\n");
+      //printf("Llegaste a imprimir\n");
       itree_imprimir(hash_conjunto(hash, igual), intervalo_imprimir);
       printf("\n");
       break;
@@ -316,7 +281,7 @@ int main() {
       break;
 
     default:
-      printf("ERROR - Caso desconocido, no debiste llegar aqui...");
+      //printf("ERROR - Caso desconocido, no debiste llegar aqui...");
       break;
     }
     // Libero la memoria de los comandos
