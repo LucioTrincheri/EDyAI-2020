@@ -149,7 +149,15 @@ void insertar_comprension(Hash* hash, char* alias, char* conjunto){
         arbol = itree_insertar(arbol, intervalo);
         hash_insertar(hash, alias, arbol);
       }
+      else {
+        printf("El inicio del intervalo es menor que el final\n");
+      }
     }
+    else{
+      printf("Valores fuera del rango de los enteros\n");
+    }
+  } else {
+    printf("Valores fuera del rango de los enteros\n");
   }
   free(resto);
 }
