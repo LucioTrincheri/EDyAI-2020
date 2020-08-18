@@ -40,14 +40,12 @@ char funcion_verificar(char *inicio, char *igual, char *final, int leidos) {
     if (leidos == 1)
       return SALIR;
   } else if(strcmp(inicio, "imprimir") == 0){
-    printf("Pase el imprimir\n");
     if(leidos == 2)
       return IMPRIMIR;
   } else if(strcmp(igual, "=") == 0){
-    printf("Pase el igual");
     if(leidos == 3){
       if(final[0] == '{')
-        if(strncmp(final, "{x :", 4) == 0)
+        if(strncmp(final, "{x :", 4) == 0) // Modificar con strchr
           return COMPRENSION;
         else
           return EXTENSION;
@@ -59,23 +57,168 @@ char funcion_verificar(char *inicio, char *igual, char *final, int leidos) {
 }
 
 
-/*
-void insertar_extension(Hash* hash, char* alias, char* conjunto){
 
+void insertar_extension(Hash* hash, char* alias, char* conjunto){
+  char* numeros = calloc(LARGO, sizeof(char));
+  char* resto = calloc(LARGO, sizeof(char));
+  char end;
+  sscanf(conjunto, "{%255[^}.]} %255[^\n]%c", numeros, resto, &end);
+  const char ch = '.';
+  printf("Numero: %s-FINAL\n", numeros);
+  printf("Resto: %s-FINAL\n", resto);
+  printf("End: %c-FINAL-\n", end);
+  if(end != '\0' || strchr(numeros, ch) != NULL){
+    printf("Error del conjunto por extension\n");
+    free(numeros);
+    free(resto);
+    return;
+  }
+  AVLTree arbol = itree_crear();
+  if(strlen(numeros) == 0) {
+    Intervalo* vacio = malloc(sizeof(Intervalo));
+    vacio->inicio = INVALINI;
+    vacio->final = INVALFIN;
+    arbol = itree_insertar(arbol, vacio);
+    itree_imprimir(arbol, intervalo_imprimir);
+    hash_insertar(hash, alias, arbol);
+    free(numeros);
+    free(resto);
+    return;
+  }
+  const char separador[2] = ",";
+  char* token = strtok(numeros, separador);
+  // Numeros: 1,2,3,4,5,6
+  while(token != NULL){
+    Intervalo* valor = malloc(sizeof(Intervalo));
+    long numero = strtol(token, NULL, 10);
+    if(numero >= -INT_MAX && numero<= INT_MAX){
+      valor->inicio = numero;
+      valor->final = numero;
+      arbol = itree_insertar_disyuncion(valor, arbol);
+      free(valor);
+    } else {
+      itree_destruir(arbol);
+      printf("Intervalo fuera del rango de los enteros");
+      free(numeros);
+      free(resto);
+      //! Puede ser necesario freear token
+      return;
+    }
+    token = strtok(NULL, separador);
+  }
+  free(numeros);
+  free(resto);
+  hash_insertar(hash, alias, arbol);
 }
 
-void insertar_comprension(Hash* hash, char* alias, char* conjunto);
+void insertar_comprension(Hash* hash, char* alias, char* conjunto){
+  char var1, var2, num1[20], num2[20];
+  char* resto = calloc(LARGO, sizeof(char));
+  char end;
+  const char ch = '.';
+  if(strchr(conjunto, ch) != NULL){
+    printf("Se encontraron numeros de punto flotante\n");
+    free(resto);
+    return;
+  }
+  sscanf(conjunto, "{%c : %19s <= %c <= %19[^}\n]} %255[^\n]%c", &var1, num1, &var2, num2, resto, &end);
+  printf("Var1: %c-FINAL\n", var1);
+  printf("Num1: %s-FINAL\n", num1);
+  printf("Var2: %c-FINAL-\n", var2);
+  printf("Num2: %s-FINAL\n", num2);
+  printf("Resto: %s-FINAL\n", resto);
+  printf("End: %c-FINAL-\n", end);
+  if(end != '\0' || var1 != var2 || var1 != 'x'){
+    printf("Conjunto por comprension mal desarrollado\n");
+    free(resto);
+    return;
+  }
+  long numero1, numero2;
+  if(strcmp(num1, "-INF") == 0)
+    numero1 = -INT_MAX;
+  else if (strcmp(num1, "INF") == 0)
+    numero1 = INT_MAX;
+  else
+    numero1 = strtol(num1, NULL, 10);
 
-void ejecutar_operacion(Hash* hash, char* alias, char* operacion);
+  if(strcmp(num2, "-INF") == 0)
+    numero2 = -INT_MAX;
+  else if (strcmp(num2, "INF") == 0)
+    numero2 = INT_MAX;
+  else
+    numero2 = strtol(num2, NULL, 10);
 
+  if(numero1 >= -INT_MAX && numero1<= INT_MAX){
+    if(numero2 >= -INT_MAX && numero2<= INT_MAX){
+      if(numero1 <= numero2){
+        AVLTree arbol = itree_crear();
+        Intervalo* intervalo = malloc(sizeof(Intervalo));
+        intervalo->inicio = numero1;
+        intervalo->final = numero2;
+        arbol = itree_insertar(arbol, intervalo);
+        hash_insertar(hash, alias, arbol);
+      }
+    }
+  }
+  free(resto);
+}
 
+int error_operacion(char end, char* resto){
 
+  if((end != '\0') /* falta modificar para que funcione con complemento*/){
+    printf("End no es barra 0\n");
+  }
+  if((end != '\0' || strlen(resto) != 0) /* falta modificar para que funcione con complemento*/){
+    printf("Error en la forma de la operacion a ejecutar\n");
+    return 0;
+  }
+  return 1;
+}
 
-
-
-*/
-
-
+void ejecutar_operacion(Hash* hash, char* alias, char* operacion){
+  char* alias1 = calloc(100, sizeof(char));
+  char* alias2 = calloc(100, sizeof(char));
+  char* resto = calloc(50, sizeof(char));
+  char end, op;
+  //scanf("%*[^\n]");
+  //scanf("%*c");
+  sscanf(operacion, "%99s %c %99s %49[^\n]%c", alias1, &op, alias2, resto, &end);
+  printf("alias1: %s-FINAL\n", alias1);
+  //printf("op: %c-FINAL\n", op);
+  //printf("alias2: %s-FINAL-\n", alias2);
+  //printf("resto: %s-FINAL\n", resto);
+  //printf("End: %c-FINAL-\n", end);
+  AVLTree final = NULL;
+  if(op == '|' && error_operacion(end, resto)){
+    //printf("Alias:%s-FInal-\n", alias);
+    //printf("Primer Alias:%s-FInal-\n", alias1);
+    //printf("Segundo Alias:%s-FInal-\n", alias2);
+    //AVLTree primer = hash_conjunto(hash, alias1);
+    //AVLTree segundo = hash_conjunto(hash, alias2);
+    //printf("Primer arbol\n");
+    //itree_imprimir(primer, intervalo_imprimir);
+    //printf("Segundo arbol\n");
+    //itree_imprimir(segundo, intervalo_imprimir);
+    final = conjuntoavl_union(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+    //printf("Arbol union\n");
+    //itree_imprimir(final, intervalo_imprimir);
+    }
+  else if (op == '&' && error_operacion(end, resto))
+    final = conjuntoavl_interseccion(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+  else if (((op == '-') || (op == '-')) && error_operacion(end, resto))
+    final = conjuntoavl_resta(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+  else if (alias1[0] == '~' && op == '\0'){ 
+    sscanf(alias1, "~%s", alias1);
+    final = conjuntoavl_complemento(hash_conjunto(hash, alias1));
+  }
+  if(final == NULL)
+    printf("No se logro realizar la operacion\n");
+  else 
+    hash_insertar(hash, alias, final);
+  free(alias1);
+  free(alias2);
+  free(resto);
+}
 
 
 // Procesamiento de entrada.
@@ -140,18 +283,18 @@ int main() {
     // Dependiendo del identificador la accion sera distinta.
     switch (identificador) {
     case OPERACION:
-      printf("Llegaste a la operacion\n");
-      //obtener_realizar_operacion(hash, inicio, operacion);
+      //printf("Llegaste a la operacion\n");
+      ejecutar_operacion(hash, inicio, operacion);
       break;
     
     case EXTENSION:
       printf("Llegaste a extension\n");
-      //insertar_extension(hash, inicio, operacion);
+      insertar_extension(hash, inicio, operacion);
       break;
     
     case COMPRENSION:
       printf("Llegaste a comprension\n");
-      //insertar_comprension(hash, inicio, operacion);
+      insertar_comprension(hash, inicio, operacion);
       break;
 
     case EXCESO:
@@ -164,7 +307,8 @@ int main() {
     
     case IMPRIMIR:
       printf("Llegaste a imprimir\n");
-      //itree_imprimir(hash_conjunto(hash, igual), intervalo_imprimir);
+      itree_imprimir(hash_conjunto(hash, igual), intervalo_imprimir);
+      printf("\n");
       break;
 
     case SALIR:

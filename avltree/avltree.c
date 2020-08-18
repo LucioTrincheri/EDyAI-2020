@@ -340,7 +340,7 @@ void intervalo_imprimir(Intervalo * intervalo) {
     printf("%d", intervalo->inicio);
   else {
     if(intervalo_inval(intervalo))
-      printf("Ø");
+      printf("Vacio"); // Ø
     else if(intervalo->inicio == -INT_MAX){
       if(intervalo->final == INT_MAX)
         printf("-INF:INF");

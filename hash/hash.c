@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "hash.h"
 
 Hash *hash_crear(unsigned int capacidad) {
@@ -36,7 +37,8 @@ void hash_insertar(Hash *tabla, char *alias, AVLTree arbol) {
   // Inicializo el nodo
   HashLista *nodo = malloc(sizeof(HashLista));
   // Guardo la información
-  nodo->alias = alias;
+  nodo->alias = malloc(sizeof(char)*(strlen(alias) + 1));
+  nodo->alias = strcpy(nodo->alias, alias);
   nodo->conjunto = arbol;
   // Agrego el nodo al inicio
   nodo->siguiente = tabla->lista[indice];

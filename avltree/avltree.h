@@ -56,6 +56,8 @@ void itree_imprimir(AVLTree, Visitante);
 
 // ------------------- Funciones conjuntos avl -------------------- //
 
+AVLTree itree_insertar_disyuncion(Intervalo*, AVLTree);
+
 AVLTree conjuntoavl_union(AVLTree, AVLTree);
 
 AVLTree conjuntoavl_interseccion(AVLTree, AVLTree);
