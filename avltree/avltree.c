@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #include "avltree.h"
 #include "lists/queue.h"
-#include <string.h>
 #include "lists/stack.h"
 
 // Funciones auxiliares -------------------------------------------------------
@@ -473,12 +473,12 @@ Intervalo* intervalo_intersecado(Intervalo* inter1, Intervalo* inter2, Intervalo
 }
 
 AVLTree itree_agregar_interseccion(Intervalo* intervalo, AVLTree intersecado, AVLTree interseccion){
-  // ! Probar funcionalidad
   AVLTree intersecta = itree_intersecar(intersecado, intervalo);
   if(intersecta){
     Intervalo* resultado = malloc(sizeof(Intervalo));
     resultado = intervalo_intersecado(intervalo, intersecta->intervalo, resultado);
     interseccion = itree_insertar_disyuncion(resultado, interseccion);
+    free(resultado);
     if(intersecta->der)
       interseccion = itree_agregar_interseccion(intervalo, intersecta->der, interseccion);
     if(intersecta->izq)

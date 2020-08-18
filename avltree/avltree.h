@@ -1,7 +1,7 @@
 #ifndef AVLTREE_H_INCLUDED
 #define AVLTREE_H_INCLUDED
 
-// Ya que como no puedo liberar el puntero intervalo al restar intervalos,
+// Ya que como no puedo liberar el puntero intervalo para representar al vacio,
 // represento el intervalo vacio como un intervalo de valores invalidos.
 #define INVALINI 1
 #define INVALFIN -1
