@@ -61,10 +61,10 @@ char funcion_verificar(char *inicio, char *igual, char *final, int leidos) {
 void insertar_extension(Hash* hash, char* alias, char* conjunto){
   char* numeros = calloc(LARGO, sizeof(char));
   char* resto = calloc(LARGO, sizeof(char));
-  char end;
-  sscanf(conjunto, "{%255[^}.]} %255[^\n]%c", numeros, resto, &end);
+  //char end = 0;
+  sscanf(conjunto, "{%255[^}.]} %255[^\n]", numeros, resto);
   const char ch = '.';
-  if(end != '\0' || strchr(numeros, ch) != NULL){
+  if(strchr(numeros, ch) != NULL || strlen(resto) != 0){
     printf("Error del conjunto por extension\n");
     free(numeros);
     free(resto);
@@ -111,15 +111,14 @@ void insertar_extension(Hash* hash, char* alias, char* conjunto){
 void insertar_comprension(Hash* hash, char* alias, char* conjunto){
   char var1, var2, num1[20], num2[20];
   char* resto = calloc(LARGO, sizeof(char));
-  char end;
   const char ch = '.';
   if(strchr(conjunto, ch) != NULL){
     printf("Se encontraron numeros de coma flotante\n");
     free(resto);
     return;
   }
-  sscanf(conjunto, "{%c : %19s <= %c <= %19[^}\n]} %255[^\n]%c", &var1, num1, &var2, num2, resto, &end);
-  if(end != '\0' || var1 != var2 || var1 != 'x'){
+  sscanf(conjunto, "{%c : %19s <= %c <= %19[^}\n]} %255[^\n]", &var1, num1, &var2, num2, resto);
+  if(strlen(resto) != 0 || var1 != var2 || var1 != 'x'){
     printf("Conjunto por comprension mal desarrollado\n");
     free(resto);
     return;
@@ -162,8 +161,8 @@ void insertar_comprension(Hash* hash, char* alias, char* conjunto){
   free(resto);
 }
 
-int error_operacion(char end, char* resto){
-  if((end != '\0' || strlen(resto) != 0) /* falta modificar para que funcione con complemento*/){
+int error_operacion(char* resto){
+  if(strlen(resto) != 0){
     printf("Error en la forma de la operacion a ejecutar\n");
     return 0;
   }
@@ -174,22 +173,22 @@ void ejecutar_operacion(Hash* hash, char* alias, char* operacion){
   char* alias1 = calloc(100, sizeof(char));
   char* alias2 = calloc(100, sizeof(char));
   char* resto = calloc(50, sizeof(char));
-  char end, op;
-  sscanf(operacion, "%99s %c %99s %49[^\n]%c", alias1, &op, alias2, resto, &end);
+  char op;
+  sscanf(operacion, "%99s %c %99s %49[^\n]", alias1, &op, alias2, resto);
   AVLTree final = NULL;
-  if(op == '|' && error_operacion(end, resto)){
+  if(op == '|' && error_operacion(resto)){
     AVLTree operando1 = hash_conjunto(hash, alias1);
     AVLTree operando2 = hash_conjunto(hash, alias2);
     if (operando1 != NULL && operando2 != NULL)
       final = conjuntoavl_union(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
     }
-  else if (op == '&' && error_operacion(end, resto)){
+  else if (op == '&' && error_operacion(resto)){
     AVLTree operando1 = hash_conjunto(hash, alias1);
     AVLTree operando2 = hash_conjunto(hash, alias2);
     if (operando1 != NULL && operando2 != NULL)
       final = conjuntoavl_interseccion(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
   }
-  else if (((op == '-') || (op == '-')) && error_operacion(end, resto)){
+  else if (((op == '-') || (op == '-')) && error_operacion(resto)){
     AVLTree operando1 = hash_conjunto(hash, alias1);
     AVLTree operando2 = hash_conjunto(hash, alias2);
     if (operando1 != NULL && operando2 != NULL)
