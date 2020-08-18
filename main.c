@@ -11,9 +11,12 @@
 #define LARGO 256
 #define CAPACIDAD 1000
 #define OPERACION 1
-#define EXCESO 2
-#define ERROR 3
-#define SALIR 4
+#define EXTENSION 2
+#define COMPRENSION 3
+#define EXCESO 4
+#define ERROR 5
+#define IMPRIMIR 6
+#define SALIR 7
 
 
 int intervalo_verificar(char *inicio, char *final, Intervalo * intervalo) {
@@ -31,34 +34,51 @@ int intervalo_verificar(char *inicio, char *final, Intervalo * intervalo) {
   return 1;
 }
 
-// error 1 = no corresponde a una funcion
-// error 2 = intervalo invalido
-// error 3 = existe residuo
-char funcion_verificar(char *ident, char *inicio, char *final, char *residuo,
-                       Intervalo * intervalo) {
-  // Chequeamos si existe residuo luego del ultimo ]
-  if (strcmp(residuo, "") != 0)
-    return '3';
-  // Si no hay residuo y el ident corresponde a un funcion con intervalo:
-  if ((ident[0] == 'i' || ident[0] == 'e' || ident[0] == '?')
-      && strlen(ident) == 2 && ident[1] == ' ') {
-    // Verificamos que el intervalo sea valido:
-    if (intervalo_verificar(inicio, final, intervalo))
-      // Si es valido retorneamos el identificador
-      return ident[0];
-    // Sino codigo de error.
-    else
-      return '2';
-  } else {
-    // Si el identificador no corresponde a funciones con intervalo, 
-    //comprobamos las restantes
-    if (strcmp(ident, "dfs") == 0 || strcmp(ident, "bfs") == 0
-        || strcmp(ident, "salir") == 0)
-      return ident[0];
+
+char funcion_verificar(char *inicio, char *igual, char *final, int leidos) {
+  if(strcmp(inicio, "salir") == 0){
+    if (leidos == 1)
+      return SALIR;
+  } else if(strcmp(inicio, "imprimir") == 0){
+    printf("Pase el imprimir\n");
+    if(leidos == 2)
+      return IMPRIMIR;
+  } else if(strcmp(igual, "=") == 0){
+    printf("Pase el igual");
+    if(leidos == 3){
+      if(final[0] == '{')
+        if(strncmp(final, "{x :", 4) == 0)
+          return COMPRENSION;
+        else
+          return EXTENSION;
+      else
+        return OPERACION;
+    }
   }
-  // No corresponde a ninguna funcion valida
-  return '1';
+  return ERROR;
 }
+
+
+/*
+void insertar_extension(Hash* hash, char* alias, char* conjunto){
+
+}
+
+void insertar_comprension(Hash* hash, char* alias, char* conjunto);
+
+void ejecutar_operacion(Hash* hash, char* alias, char* operacion);
+
+
+
+
+
+
+*/
+
+
+
+
+// Procesamiento de entrada.
 
 void copiar_seccion(char *comando, char *parte, int i, int *cont,
                     int *indexToken, char eow) {
@@ -69,38 +89,28 @@ void copiar_seccion(char *comando, char *parte, int i, int *cont,
     parte[(*cont)] = comando[i];
 }
 
-char entrada_validar(char *comando, char* inicio, char* igual, char* final, char* residuo) {
+char entrada_validar(char *comando, char* inicio, char* igual, char* operacion) {
   int i = 0, cont = 0;
   int indexToken = 0;
-  char eows[] = "[,]";
+  char eows[] = "  ";
 
   for (; comando[i] != '\n' && comando[i] != '\r'; i++, cont++) {
-    // Copiamos residuo
-    if (indexToken == 3)
-      copiar_seccion(comando, residuo, i, &cont, &indexToken, '\n');
-    // Copiamos final
+    // Copiamos la opreracion
     if (indexToken == 2)
-      copiar_seccion(comando, final, i, &cont, &indexToken, eows[2]);
-    // Copiamos inicio
+      copiar_seccion(comando, operacion, i, &cont, &indexToken, '\n');
+    // Copiamos la igualdad
     if (indexToken == 1)
-      copiar_seccion(comando, inicio, i, &cont, &indexToken, eows[1]);
-    // Copiamos el identificador hasta encontrar la llave.
+      copiar_seccion(comando, igual, i, &cont, &indexToken, eows[1]);
+    // Copiamos el inicio.
     if (indexToken == 0)
-      copiar_seccion(comando, ident, i, &cont, &indexToken, eows[0]);
+      copiar_seccion(comando, inicio, i, &cont, &indexToken, eows[0]);
   }
-  char primeraLetra =
-      funcion_verificar(ident, inicio, final, residuo, intervalo);
-  free(ident);
-  free(inicio);
-  free(final);
-  free(residuo);
-
-  return primeraLetra;
+  printf("Index: %d\n", indexToken+1);
+  printf("Cadena inicio: %s-FINAL-\n", inicio);
+  printf("Cadena igual: %s-FINAL-\n", igual);
+  printf("Cadena operacion: %s-FINAL-\n", operacion);
+  return funcion_verificar(inicio, igual, operacion, ++indexToken);
 }
-
-
-
-
 
 int main() {
 
@@ -108,16 +118,14 @@ int main() {
   Hash* hash = hash_crear(CAPACIDAD);
 
   printf("Interfaz 1.0\n");
-
   while (salida) {
     char *comando = malloc(sizeof(char) * LARGO);
-    char *inicio = calloc(CAPACIDAD, sizeof(char));
-    char *igual = calloc(CAPACIDAD, sizeof(char));
-    char *final = calloc(CAPACIDAD, sizeof(char));
-    char *residuo = calloc(CAPACIDAD, sizeof(char));
+    char *inicio = calloc(LARGO, sizeof(char));
+    char *igual = calloc(LARGO, sizeof(char));
+    char *operacion = calloc(LARGO, sizeof(char));
     int identificador;
     // leemos con \n incluido
-    fgets(comando, 256, stdin);
+    fgets(comando, LARGO, stdin);
     // Si se excede la capacidad maxima queda caracteres en el buffer,
     // en ese caso limpiamos el buffer y notificamos el error.
     if (strlen(comando) == LARGO - 1){
@@ -125,13 +133,25 @@ int main() {
       scanf("%*c");
       identificador = EXCESO;
     } else {
-      identificador = entrada_validar(comando, inicio, igual, final, residuo);
+      //comando[LARGO-1] = '\0';
+      identificador = entrada_validar(comando, inicio, igual, operacion);
     }
     
     // Dependiendo del identificador la accion sera distinta.
     switch (identificador) {
     case OPERACION:
-      obtener_realizar_operacion(inicio, igual, final, residuo);
+      printf("Llegaste a la operacion\n");
+      //obtener_realizar_operacion(hash, inicio, operacion);
+      break;
+    
+    case EXTENSION:
+      printf("Llegaste a extension\n");
+      //insertar_extension(hash, inicio, operacion);
+      break;
+    
+    case COMPRENSION:
+      printf("Llegaste a comprension\n");
+      //insertar_comprension(hash, inicio, operacion);
       break;
 
     case EXCESO:
@@ -141,28 +161,30 @@ int main() {
     case ERROR:
       printf("ERROR - Elemento invalido dentro del comando\n");
       break;
+    
+    case IMPRIMIR:
+      printf("Llegaste a imprimir\n");
+      //itree_imprimir(hash_conjunto(hash, igual), intervalo_imprimir);
+      break;
 
     case SALIR:
       salida = 0;
       break;
 
     default:
-      printf("ERROR-Caso desconocido, no debiste llegar aqui...");
+      printf("ERROR - Caso desconocido, no debiste llegar aqui...");
       break;
     }
     // Libero la memoria de los comandos
     free(comando);
     free(inicio);
     free(igual);
-    free(final);
-    free(residuo);
+    free(operacion);
   }
   // Se destruye la tabla hash de conjuntos.
   hash_destruir(hash);
   return 0;
 }
-
-
 
   /*
   AVLTree A = itree_crear();

@@ -356,6 +356,10 @@ void intervalo_imprimir(Intervalo * intervalo) {
 // TODO Terminar imprimir y borrar irorder (obsoleta) 
 
 void itree_imprimir(AVLTree arbol, Visitante visitante){
+  if(!arbol){
+    printf("No existe un conjunto asociado a ese alias\n");
+    return;
+  }
   Stack nodos = stack_new();
   AVLTree temp = arbol;
   while (temp != NULL || !stack_isEmpty(nodos)) {
