@@ -3,13 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <ctype.h>
+#include "hash/hash.h"
 #include "avltree/avltree.h"
 #include "avltree/lists/queue.h"
 #include "avltree/lists/stack.h"
-#define CAPACIDAD 200
+#define LARGO 256
+#define CAPACIDAD 1000
+#define OPERACION 1
+#define EXCESO 2
+#define ERROR 3
+#define SALIR 4
 
 
-/*
 int intervalo_verificar(char *inicio, char *final, Intervalo * intervalo) {
   char *errorI;
   double inicioD = strtod(inicio, &errorI);
@@ -63,15 +69,10 @@ void copiar_seccion(char *comando, char *parte, int i, int *cont,
     parte[(*cont)] = comando[i];
 }
 
-char entrada_validar(char *comando, Intervalo * intervalo) {
+char entrada_validar(char *comando, char* inicio, char* igual, char* final, char* residuo) {
   int i = 0, cont = 0;
   int indexToken = 0;
   char eows[] = "[,]";
-  // Variables que almacenaran las distintas secciones del comando.
-  char *ident = calloc(CAPACIDAD, sizeof(char));
-  char *inicio = calloc(CAPACIDAD, sizeof(char));
-  char *final = calloc(CAPACIDAD, sizeof(char));
-  char *residuo = calloc(CAPACIDAD, sizeof(char));
 
   for (; comando[i] != '\n' && comando[i] != '\r'; i++, cont++) {
     // Copiamos residuo
@@ -97,101 +98,73 @@ char entrada_validar(char *comando, Intervalo * intervalo) {
   return primeraLetra;
 }
 
+
+
+
+
 int main() {
 
   int salida = 1;
-  AVLTree arbol = itree_crear();
+  Hash* hash = hash_crear(CAPACIDAD);
 
   printf("Interfaz 1.0\n");
 
   while (salida) {
-    char *comando = malloc(sizeof(char) * CAPACIDAD);
+    char *comando = malloc(sizeof(char) * LARGO);
+    char *inicio = calloc(CAPACIDAD, sizeof(char));
+    char *igual = calloc(CAPACIDAD, sizeof(char));
+    char *final = calloc(CAPACIDAD, sizeof(char));
+    char *residuo = calloc(CAPACIDAD, sizeof(char));
+    int identificador;
     // leemos con \n incluido
-    Intervalo *intervalo = malloc(sizeof(Intervalo));
-    char identificador;
-
-    fgets(comando, CAPACIDAD, stdin);
+    fgets(comando, 256, stdin);
     // Si se excede la capacidad maxima queda caracteres en el buffer,
     // en ese caso limpiamos el buffer y notificamos el error.
-    
-    if (strlen(comando) == CAPACIDAD-1 ){
+    if (strlen(comando) == LARGO - 1){
       scanf("%*[^\n]");
       scanf("%*c");
-      identificador = '4'; 
-    } else
-      identificador = entrada_validar(comando, intervalo);
+      identificador = EXCESO;
+    } else {
+      identificador = entrada_validar(comando, inicio, igual, final, residuo);
+    }
     
-    free(comando);
-
     // Dependiendo del identificador la accion sera distinta.
     switch (identificador) {
-    case 'i':
-      arbol = itree_insertar(arbol, intervalo);
+    case OPERACION:
+      obtener_realizar_operacion(inicio, igual, final, residuo);
       break;
 
-    case 'e':
-      arbol = itree_eliminar(arbol, intervalo, 0);
+    case EXCESO:
+      printf("Largo excedido\n");
       break;
 
-    case '?':{
-        AVLTree inter = itree_intersecar(arbol, intervalo);
-        if (inter == NULL)
-          printf("NO\n");
-        else {
-          printf("SI: ");
-          intervalo_imprimir(inter->intervalo);
-        }
-        break;
-      }
-    case 'd':
-      itree_recorrer_dfs(arbol, intervalo_imprimir);
+    case ERROR:
+      printf("ERROR - Elemento invalido dentro del comando\n");
       break;
 
-    case 'b':
-      itree_recorrer_bfs(arbol, intervalo_imprimir);
-      break;
-
-    case 's':
-      printf("Saliendo del programa\n");
+    case SALIR:
       salida = 0;
-      break;
-
-    case '1':
-      printf("ERROR-Funcion invalida!\n");
-      break;
-
-    case '2':
-      printf("ERROR-Intervalo invalido!\n");
-      break;
-
-    case '3':
-      printf("ERROR-Caracteres irreconocibles tras ']'!\n");
-      break;
-
-    case '4':
-      printf("ERROR-Maximo de caracteres excedido!\n");
       break;
 
     default:
       printf("ERROR-Caso desconocido, no debiste llegar aqui...");
       break;
     }
-    // Si el intervalo no es insertado, o no es valido 
-    //se libera ese espacio de memoria.
-    if (identificador != 'i')
-      free(intervalo);
+    // Libero la memoria de los comandos
+    free(comando);
+    free(inicio);
+    free(igual);
+    free(final);
+    free(residuo);
   }
-  // Se destruye el arbol sobre el cual se realizan las opearaciones.
-  itree_destruir(arbol);
-
+  // Se destruye la tabla hash de conjuntos.
+  hash_destruir(hash);
   return 0;
 }
 
 
-*/
 
-int main() {
-  // Pruebo union dis
+  /*
   AVLTree A = itree_crear();
   Intervalo *intervalo1 = malloc(sizeof(Intervalo));
   Intervalo *intervalo2 = malloc(sizeof(Intervalo));
@@ -330,6 +303,5 @@ int main() {
   itree_destruir(R);
   itree_destruir(V);
   itree_destruir(Ir);
-  
-  return 0;
-}
+  */
+  // TODO pasar las funciones de hash.c a hash.h
