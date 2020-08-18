@@ -178,15 +178,28 @@ void ejecutar_operacion(Hash* hash, char* alias, char* operacion){
   sscanf(operacion, "%99s %c %99s %49[^\n]%c", alias1, &op, alias2, resto, &end);
   AVLTree final = NULL;
   if(op == '|' && error_operacion(end, resto)){
-    final = conjuntoavl_union(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+    AVLTree operando1 = hash_conjunto(hash, alias1);
+    AVLTree operando2 = hash_conjunto(hash, alias2);
+    if (operando1 != NULL && operando2 != NULL)
+      final = conjuntoavl_union(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
     }
-  else if (op == '&' && error_operacion(end, resto))
-    final = conjuntoavl_interseccion(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
-  else if (((op == '-') || (op == '-')) && error_operacion(end, resto))
-    final = conjuntoavl_resta(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+  else if (op == '&' && error_operacion(end, resto)){
+    AVLTree operando1 = hash_conjunto(hash, alias1);
+    AVLTree operando2 = hash_conjunto(hash, alias2);
+    if (operando1 != NULL && operando2 != NULL)
+      final = conjuntoavl_interseccion(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+  }
+  else if (((op == '-') || (op == '-')) && error_operacion(end, resto)){
+    AVLTree operando1 = hash_conjunto(hash, alias1);
+    AVLTree operando2 = hash_conjunto(hash, alias2);
+    if (operando1 != NULL && operando2 != NULL)
+      final = conjuntoavl_resta(hash_conjunto(hash, alias1), hash_conjunto(hash, alias2));
+  }
   else if (alias1[0] == '~' && op == '\0'){ 
     sscanf(alias1, "~%s", alias1);
-    final = conjuntoavl_complemento(hash_conjunto(hash, alias1));
+    AVLTree operando1 = hash_conjunto(hash, alias1);
+    if (operando1 != NULL)
+      final = conjuntoavl_complemento(hash_conjunto(hash, alias1));
   }
   if(final == NULL)
     printf("No se logro realizar la operacion\n");
