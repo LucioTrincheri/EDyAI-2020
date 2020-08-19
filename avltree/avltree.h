@@ -56,13 +56,18 @@ void itree_imprimir(AVLTree, Visitante);
 
 // ------------------- Funciones conjuntos avl -------------------- //
 
+// Funcion auxiliar a la union. Agrega nodos de forma disjunta al arbol
 AVLTree itree_insertar_disyuncion(Intervalo*, AVLTree);
 
+// Funcion principal union
 AVLTree conjuntoavl_union(AVLTree, AVLTree);
 
+// Funcion principal interseccion
 AVLTree conjuntoavl_interseccion(AVLTree, AVLTree);
 
+// Funcion principal resta
 AVLTree conjuntoavl_resta(AVLTree, AVLTree);
 
+// Funcion principal complemento
 AVLTree conjuntoavl_complemento(AVLTree);
 #endif

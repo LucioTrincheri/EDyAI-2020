@@ -284,10 +284,12 @@ void itree_destruir(AVLTree arbol) {
   }
 }
 
-// ----------------------------- CONJUNTOS AVL ---------------------------- //
+// ----------------------------- CONJUNTOS AVL ---------------------------- // -----------------------------------------
 
 // Funciones recorrido y aplicacion modificadas //
 
+// Funcion auxiliar que devulve 1 si un intervalo es invalido (vacio)
+// Sino devuelve 0 en caso contrario
 int intervalo_inval(Intervalo* intervalo){
   if(intervalo->inicio == INVALINI && intervalo->final == INVALFIN)
     return 1;
@@ -335,6 +337,8 @@ void itree_recorrer_inorder(AVLTree arbol, Visitante visitante) {
 
 // Funciones visitante modificadas.
 
+// Nueva funcion visitante imprimir que se adapta a intervalos 
+// tanto vacios como los infinitos
 void intervalo_imprimir(Intervalo * intervalo) {
   if(intervalo->inicio == intervalo->final)
     printf("%d", intervalo->inicio);
@@ -353,8 +357,8 @@ void intervalo_imprimir(Intervalo * intervalo) {
   }
 }
 
-// TODO Terminar imprimir y borrar irorder (obsoleta) 
-
+// Funcion para imprimir de forma inorder al arbol. Modificada
+// para funcionar con intervalo_imprimir como visitante
 void itree_imprimir(AVLTree arbol, Visitante visitante){
   if(!arbol){
     printf("No existe un conjunto asociado a ese alias\n");
@@ -382,6 +386,10 @@ void itree_imprimir(AVLTree arbol, Visitante visitante){
 
 // Nuevas funciones de insercion / creacion.
 
+// Funcion que se encarga de duplicar un arbol
+// mediante la copia de los valores nodo por nodo
+// del mismo. Utilizada en las funciones de conjuntos
+// para crear un nuevo arbol sobre el cual trabajar.
 AVLTree itree_duplicar(AVLTree arbol){
   if(!arbol)
     return NULL;
@@ -399,12 +407,15 @@ AVLTree itree_duplicar(AVLTree arbol){
   return duplicado;
 }
 
-
+// Funcion auxiliar encargada de copiar los valores de un intervalo a otro
 Intervalo* intervalo_copiar(Intervalo* copia, Intervalo* intervalo){
   copia->inicio = intervalo->inicio;
   copia->final = intervalo->final;
   return copia;
 }
+
+// Funcion auxiliar de itree_insertar_disyuncion, la cual se encaga de expandir
+// el intervalo argumento en un en cada sentido.
 Intervalo* intervalo_expandir(Intervalo* expandido){
   if(expandido->inicio != -INT_MAX)
     expandido->inicio -=1;
@@ -431,6 +442,8 @@ AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
   // Por ejemplo si el intervalo fuese (3,4) y el arbol contiene al (5,6)
   // la interseccion daria vacia, aunque la union pudiese dar el conjunto (3,6)
   AVLTree interseccionExp = itree_intersecar(arbol, expandido);
+  // Hasta que no encuentre intersecciones, uno los nodos que se intersequen
+  // para al final insertarlos como un solo nodo disjunto del resto del arbol
   while(interseccionExp){
     copia->inicio = min(copia->inicio, interseccionExp->intervalo->inicio);
     copia->final = max(copia->final, interseccionExp->intervalo->final);
@@ -442,7 +455,7 @@ AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
     interseccionExp = itree_intersecar(arbol, expandido);
   }
   free(expandido);
-  free(interseccionExp); // ! puede estar al pedo ya que es null (checkear memoria)
+  free(interseccionExp);
 
   arbol = itree_insertar(arbol, copia);
   return arbol;
@@ -450,6 +463,9 @@ AVLTree itree_insertar_disyuncion(Intervalo* intervalo, AVLTree arbol){
 }
 
 // Funciones de conjuntos
+// Funcion principal de union, la cual duplica el arbol mas chico
+// y le une mediante la auxiliar itree_insertar_disyuncion los intervalos
+// del otro arbol
 AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
   if(intervalo_inval(conjA->intervalo))
     return itree_duplicar(conjB);
@@ -470,12 +486,17 @@ AVLTree conjuntoavl_union(AVLTree conjA, AVLTree conjB){
   return duplicado;
 }
 
+// Funcion auxiliar de itree_agregar_interseccion, la cual devuelve
+// un intervalo que sea la interseccion de otros dos
 Intervalo* intervalo_intersecado(Intervalo* inter1, Intervalo* inter2, Intervalo* resultado){
   resultado->inicio = max(inter1->inicio, inter2->inicio);
   resultado->final = min(inter1->final, inter2->final);
   return resultado;
 }
 
+// Funcion visitante de itree_interseccion auxiliar. Esta funcion 
+// agrega la interseccion entre el intervalo argumento y el arbol a intersecar
+// guardando la misma en el arbol resultado interseccion
 AVLTree itree_agregar_interseccion(Intervalo* intervalo, AVLTree intersecado, AVLTree interseccion){
   AVLTree intersecta = itree_intersecar(intersecado, intervalo);
   if(intersecta){
@@ -491,6 +512,9 @@ AVLTree itree_agregar_interseccion(Intervalo* intervalo, AVLTree intersecado, AV
   return interseccion;
 }
 
+// Implementacion similar a itree_recorrer_dfs, aplicando la funcion visitante
+// itree_agregar_interseccion entre los intervalos del arbol originar y el 
+// intersecado. Los resultados se agregan al arbol interseccion 
 AVLTree itree_interseccion_aux(AVLTree arbol, AVLTree intersecado, AVLTree interseccion){
   Stack nodos = stack_new();
   if(arbol)
@@ -508,6 +532,9 @@ AVLTree itree_interseccion_aux(AVLTree arbol, AVLTree intersecado, AVLTree inter
   return interseccion;
 }
 
+// Funcion principal interseccion, la cual duplica el arbol mas chico para
+// intersecarlo con los intervalos del mas grande. Delega la mayoria del 
+// funcionamiento a su funcion auxiliar  itree_interseccion_aux
 AVLTree conjuntoavl_interseccion(AVLTree conjA, AVLTree conjB){ // TODO checkear interseccion
   AVLTree interseccion = itree_crear();
   if(intervalo_inval(conjA->intervalo) || intervalo_inval(conjB->intervalo)){
@@ -537,6 +564,10 @@ AVLTree conjuntoavl_interseccion(AVLTree conjA, AVLTree conjB){ // TODO checkear
   return interseccion;
 }
 
+// Funcion auxiliar de conjuntoavl_resta, la cual retorna un arbol resta
+// el cual es originalmente una copia del arbol al cual se le van a restar
+// elementos. Mediante su interseccion con los intervalos a restar, se le 
+// van retirando partes del arbol hasta retornar el arbol final ya restado.
 AVLTree itree_resta_intervalo(Intervalo* intervalo, AVLTree resta){
   if (intervalo->inicio == INVALINI && intervalo->final == INVALFIN)
     return resta;
@@ -566,10 +597,12 @@ AVLTree itree_resta_intervalo(Intervalo* intervalo, AVLTree resta){
       }
     }
   }
-  free(interseccion); // ! Al igual que agregar puede llegar a ser inutil checkear memoria
+  free(interseccion);
   return resta;
 }
 
+// Funcion principal resta, la cual delega su funcionamiento a la funcion
+// auxiliar itree_resta_intervalo.
 AVLTree conjuntoavl_resta(AVLTree conjA, AVLTree conjB){
   AVLTree resta = itree_crear();
   resta = itree_duplicar(conjA);
@@ -585,6 +618,8 @@ AVLTree conjuntoavl_resta(AVLTree conjA, AVLTree conjB){
   return resta;
 }
 
+// Funcion principal complemento. Esta funcion se creo mediante la propiedad
+// ~A = U - A, siendo U el universo de los enteros.
 AVLTree conjuntoavl_complemento(AVLTree conjA){
   AVLTree universo = itree_crear();
   Intervalo* univ = malloc(sizeof(Intervalo));
