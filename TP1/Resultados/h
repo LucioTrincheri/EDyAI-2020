@@ -1,0 +1,146 @@
+
+Lista resultante de aplicar el algoritmo selection con la comparacion por edad:
+
+CECILIA MATAMOROS, 1, Reikiavik
+DINIA ROJAS, 5, Surinam
+CARLOS GARBANZO, 24, Riad
+MARIA CECILIA ZUÑIGA, 31, Trípoli
+MIRIAM MEJIA, 37, Eslovenia
+EDUARDO PALMA, 39, Marruecos
+OVIDIO TORRES, 44, Isla Pitcairn
+ZOILA MARIA LOAIZA, 44, Qatar
+ORLANDO GERARDO HEILBRON, 46, Uagadugú
+ANTONIO AGUILAR, 50, San Marino
+JOSE GERARDO CASTRO, 51, Nasáu
+HILDA MARIA LOPEZ, 56, Oslo
+FLORIA SABORIO, 60, Pekín
+OSVALDO ACUÑA, 62, Malé
+MANUEL ENRIQUE JARA, 72, Saná
+JUAN JOSE VILLALTA, 76, Reunión
+NURIA PORRAS, 81, Gibraltar
+CONSUELO VINDAS, 82, Dakar
+VIRGINIA BENAVIDES, 88, Gaborone
+SARA ULLOA, 97, Territorio Británico del Océano Indico
+
+Lista resultante de aplicar el algoritmo selection con la comparacion por nombre:
+
+ANTONIO AGUILAR, 50, San Marino
+CARLOS GARBANZO, 24, Riad
+CECILIA MATAMOROS, 1, Reikiavik
+CONSUELO VINDAS, 82, Dakar
+DINIA ROJAS, 5, Surinam
+EDUARDO PALMA, 39, Marruecos
+FLORIA SABORIO, 60, Pekín
+HILDA MARIA LOPEZ, 56, Oslo
+JOSE GERARDO CASTRO, 51, Nasáu
+JUAN JOSE VILLALTA, 76, Reunión
+MANUEL ENRIQUE JARA, 72, Saná
+MARIA CECILIA ZUÑIGA, 31, Trípoli
+MIRIAM MEJIA, 37, Eslovenia
+NURIA PORRAS, 81, Gibraltar
+ORLANDO GERARDO HEILBRON, 46, Uagadugú
+OSVALDO ACUÑA, 62, Malé
+OVIDIO TORRES, 44, Isla Pitcairn
+SARA ULLOA, 97, Territorio Británico del Océano Indico
+VIRGINIA BENAVIDES, 88, Gaborone
+ZOILA MARIA LOAIZA, 44, Qatar
+
+Lista resultante de aplicar el algoritmo insertion con la comparacion por edad:
+
+CECILIA MATAMOROS, 1, Reikiavik
+DINIA ROJAS, 5, Surinam
+CARLOS GARBANZO, 24, Riad
+MARIA CECILIA ZUÑIGA, 31, Trípoli
+MIRIAM MEJIA, 37, Eslovenia
+EDUARDO PALMA, 39, Marruecos
+ZOILA MARIA LOAIZA, 44, Qatar
+OVIDIO TORRES, 44, Isla Pitcairn
+ORLANDO GERARDO HEILBRON, 46, Uagadugú
+ANTONIO AGUILAR, 50, San Marino
+JOSE GERARDO CASTRO, 51, Nasáu
+HILDA MARIA LOPEZ, 56, Oslo
+FLORIA SABORIO, 60, Pekín
+OSVALDO ACUÑA, 62, Malé
+MANUEL ENRIQUE JARA, 72, Saná
+JUAN JOSE VILLALTA, 76, Reunión
+NURIA PORRAS, 81, Gibraltar
+CONSUELO VINDAS, 82, Dakar
+VIRGINIA BENAVIDES, 88, Gaborone
+SARA ULLOA, 97, Territorio Británico del Océano Indico
+
+Lista resultante de aplicar el algoritmo insertion con la comparacion por nombre:
+
+ANTONIO AGUILAR, 50, San Marino
+CARLOS GARBANZO, 24, Riad
+CECILIA MATAMOROS, 1, Reikiavik
+CONSUELO VINDAS, 82, Dakar
+DINIA ROJAS, 5, Surinam
+EDUARDO PALMA, 39, Marruecos
+FLORIA SABORIO, 60, Pekín
+HILDA MARIA LOPEZ, 56, Oslo
+JOSE GERARDO CASTRO, 51, Nasáu
+JUAN JOSE VILLALTA, 76, Reunión
+MANUEL ENRIQUE JARA, 72, Saná
+MARIA CECILIA ZUÑIGA, 31, Trípoli
+MIRIAM MEJIA, 37, Eslovenia
+NURIA PORRAS, 81, Gibraltar
+ORLANDO GERARDO HEILBRON, 46, Uagadugú
+OSVALDO ACUÑA, 62, Malé
+OVIDIO TORRES, 44, Isla Pitcairn
+SARA ULLOA, 97, Territorio Británico del Océano Indico
+VIRGINIA BENAVIDES, 88, Gaborone
+ZOILA MARIA LOAIZA, 44, Qatar
+
+Lista resultante de aplicar el algoritmo merge con la comparacion por edad:
+
+CECILIA MATAMOROS, 1, Reikiavik
+DINIA ROJAS, 5, Surinam
+CARLOS GARBANZO, 24, Riad
+MARIA CECILIA ZUÑIGA, 31, Trípoli
+MIRIAM MEJIA, 37, Eslovenia
+EDUARDO PALMA, 39, Marruecos
+ZOILA MARIA LOAIZA, 44, Qatar
+OVIDIO TORRES, 44, Isla Pitcairn
+ORLANDO GERARDO HEILBRON, 46, Uagadugú
+ANTONIO AGUILAR, 50, San Marino
+JOSE GERARDO CASTRO, 51, Nasáu
+HILDA MARIA LOPEZ, 56, Oslo
+FLORIA SABORIO, 60, Pekín
+OSVALDO ACUÑA, 62, Malé
+MANUEL ENRIQUE JARA, 72, Saná
+JUAN JOSE VILLALTA, 76, Reunión
+NURIA PORRAS, 81, Gibraltar
+CONSUELO VINDAS, 82, Dakar
+VIRGINIA BENAVIDES, 88, Gaborone
+SARA ULLOA, 97, Territorio Británico del Océano Indico
+
+Lista resultante de aplicar el algoritmo merge con la comparacion por nombre:
+
+ANTONIO AGUILAR, 50, San Marino
+CARLOS GARBANZO, 24, Riad
+CECILIA MATAMOROS, 1, Reikiavik
+CONSUELO VINDAS, 82, Dakar
+DINIA ROJAS, 5, Surinam
+EDUARDO PALMA, 39, Marruecos
+FLORIA SABORIO, 60, Pekín
+HILDA MARIA LOPEZ, 56, Oslo
+JOSE GERARDO CASTRO, 51, Nasáu
+JUAN JOSE VILLALTA, 76, Reunión
+MANUEL ENRIQUE JARA, 72, Saná
+MARIA CECILIA ZUÑIGA, 31, Trípoli
+MIRIAM MEJIA, 37, Eslovenia
+NURIA PORRAS, 81, Gibraltar
+ORLANDO GERARDO HEILBRON, 46, Uagadugú
+OSVALDO ACUÑA, 62, Malé
+OVIDIO TORRES, 44, Isla Pitcairn
+SARA ULLOA, 97, Territorio Británico del Océano Indico
+VIRGINIA BENAVIDES, 88, Gaborone
+ZOILA MARIA LOAIZA, 44, Qatar
+
+La lista tenia 20 elementos
+
+Resumen:
+Algoritmo | por edad | por nombre
+ Selecion   0.000003s   0.000003s
+ Insertion  0.000003s   0.000003s
+ Merge      0.000003s   0.000003s
